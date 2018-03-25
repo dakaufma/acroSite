@@ -73,7 +73,12 @@ svg.append("svg:defs").selectAll("marker")
   .append("svg:path")
   .attr("d", "M0,-5L10,0L0,5");
 var zoom = d3.behavior.zoom().scaleExtent([min_zoom,max_zoom]);
+zoom.scale(0.25);
 var g = svg.append("g");
+g.attr("transform", "scale(" + zoom.scale() + ")");
+var links = g.append("g").attr("id", "links");
+var texts = g.append("g").attr("id", "texts");
+var nodes = g.append("g").attr("id", "nodes");
 svg.style("cursor","move");
 
 d3.json("graph.json", function(error, graph) {
@@ -101,7 +106,7 @@ d3.json("graph.json", function(error, graph) {
     .links(graph.links)
     .start();
 
-  var link = g.selectAll(".link")
+  var link = links.selectAll(".link")
     .data(graph.links)
     .enter().append("line")
     .attr("class", "link")
@@ -111,7 +116,7 @@ d3.json("graph.json", function(error, graph) {
       else return default_link_color; })
     .attr("marker-end", "url(#end)");
 
-  var node = g.selectAll(".node")
+  var node = nodes.selectAll(".node")
     .data(graph.nodes)
     .enter().append("g")
     .attr("class", "node")
@@ -153,7 +158,10 @@ d3.json("graph.json", function(error, graph) {
 
   var setEvents = images
     .on( 'mouseenter', function() {
-      // select element in current context
+      // move the current element to the front
+      nodes.node().appendChild(this.parentNode);
+
+      // animate enlarging the current element
       d3.select( this )
         .transition()
         .attr("x", function(d) { return -100;})
@@ -169,7 +177,7 @@ d3.json("graph.json", function(error, graph) {
         .attr("height", 50)
         .attr("width", 50)});
 
-  var text = g.selectAll(".text")
+  var text = texts.selectAll(".text")
     .data(graph.nodes)
     .enter().append("text")
     .attr("dy", "0.5em")

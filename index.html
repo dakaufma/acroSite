@@ -198,8 +198,11 @@ d3.json("graph.json", function(error, graph) {
     .on("mousedown", function(d) {
       d3.event.stopPropagation();
       focus_node = d;
-      set_focus(d)
-      if (highlight_node === null) set_highlight(d)})
+      set_focus(d);
+      if (highlight_node === null) set_highlight(d);
+      washingMachinesFilter = d.washing_machines;
+      update_visibility();
+    })
     .on("mouseout", function(d) {
       exit_highlight();});
 
@@ -212,8 +215,9 @@ d3.json("graph.json", function(error, graph) {
           link.style("opacity", 1);
         }
       }
-
       if (highlight_node === null) exit_highlight();
+      washingMachinesFilter = [];
+      update_visibility();
   });
 
   function exit_highlight() {
@@ -338,30 +342,34 @@ d3.json("graph.json", function(error, graph) {
         case "0": key0 = !key0; break;
       }
 
-      link.style("display", function(d) {
-        var flag =
-            vis(d.source) &&
-            vis(d.target) &&
-            vis_by_link_score(d.score);
-        linkedByIndex[d.source.index + "," + d.target.index] = flag;
-        return flag ? "inline" : "none";
-      });
-      node.style("display", function(d) {
-        return (key0||hasConnections(d)) && vis(d) ?"inline" : "none";
-      });
-      text.style("display", function(d) {
-        return (key0||hasConnections(d)) && vis(d) ? "inline" : "none";
-      });
+      update_visibility();
+    }
+  }
 
-      if (highlight_node !== null) {
-        if ((key0||hasConnections(highlight_node)) && vis(highlight_node)) {
-          if (focus_node!==null) set_focus(focus_node);
-          set_highlight(highlight_node);
-        } else {
-          exit_highlight();
-        }
+  function update_visibility() {
+    link.style("display", function(d) {
+      var flag =
+        vis(d.source) &&
+        vis(d.target) &&
+        vis_by_link_score(d.score);
+      linkedByIndex[d.source.index + "," + d.target.index] = flag;
+      return flag ? "inline" : "none";
+    });
+    node.style("display", function(d) {
+      return (key0||hasConnections(d)) && vis(d) ?"inline" : "none";
+    });
+    text.style("display", function(d) {
+      return (key0||hasConnections(d)) && vis(d) ? "inline" : "none";
+    });
+
+    if (highlight_node !== null) {
+      if ((key0||hasConnections(highlight_node)) && vis(highlight_node)) {
+        if (focus_node!==null) set_focus(focus_node);
+        set_highlight(highlight_node);
+      } else {
+        exit_highlight();
       }
-    }	
+    }
   }
 });
 
@@ -396,11 +404,11 @@ function vis_by_pose_difficulty(difficulty) {
 }
 
 function vis_by_washing_machine(washingMachines) {
-  if (washingMachinesFilter.length === 0 || !washingMachines || washingMachines.length === 0) {
+  if (washingMachinesFilter.length === 0 || !washingMachines) {
     return true;
   } else {
-    for (washingMachine in washingMachines) {
-      if (washingMachinesFilter.indexOf(washingMachine) != -1) {
+    for (var i = 0; i < washingMachines.length; i++) {
+      if (washingMachinesFilter.indexOf(washingMachines[i]) != -1) {
         return true;
       }
     }

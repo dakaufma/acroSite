@@ -339,32 +339,21 @@ d3.json("graph.json", function(error, graph) {
 
       link.style("display", function(d) {
         var flag =
-            vis_by_position(d.source.position) &&
-            vis_by_position(d.target.position) &&
-            vis_by_pose_difficulty(d.source.difficulty) &&
-            vis_by_pose_difficulty(d.target.difficulty) &&
+            vis(d.source.position, d.source.difficulty) &&
+            vis(d.target.position, d.target.difficulty) &&
             vis_by_link_score(d.score);
         linkedByIndex[d.source.index + "," + d.target.index] = flag;
         return flag ? "inline" : "none";
       });
       node.style("display", function(d) {
-        return (key0||hasConnections(d))
-          && vis_by_position(d.position)
-          && vis_by_pose_difficulty(d.difficulty)
-          ?"inline" : "none";
+        return (key0||hasConnections(d)) && vis(d.position, d.difficulty) ?"inline" : "none";
       });
       text.style("display", function(d) {
-        return (key0||hasConnections(d))
-          && vis_by_position(d.position)
-          && vis_by_pose_difficulty(d.difficulty)
-          ? "inline" : "none";
+        return (key0||hasConnections(d)) && vis(d.position, d.difficulty) ? "inline" : "none";
       });
 
       if (highlight_node !== null) {
-        if ((key0||hasConnections(highlight_node)) &&
-          vis_by_position(highlight_node.position) &&
-          vis_by_pose_difficulty(highlight_node.difficulty)) { 
-
+        if ((key0||hasConnections(highlight_node)) && vis(highlight_node.position, highlight_node.difficulty)) {
           if (focus_node!==null) set_focus(focus_node);
           set_highlight(highlight_node);
         } else {
@@ -374,6 +363,10 @@ d3.json("graph.json", function(error, graph) {
     }	
   }
 });
+
+function vis(position, difficulty, washingMachine) {
+  return vis_by_position(position) && vis_by_pose_difficulty(difficulty);
+}
 
 function vis_by_position(position) {
   switch (position) {

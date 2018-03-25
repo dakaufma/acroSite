@@ -176,6 +176,13 @@ d3.json("graph.json", function(error, graph) {
         .attr("x", function(d) { return -25;})
         .attr("y", function(d) { return -25;})
         .attr("height", 50)
+        .attr("width", 50)})
+    .on( 'mousedown', function() {
+      d3.select( this )
+        .transition()
+        .attr("x", function(d) { return -25;})
+        .attr("y", function(d) { return -25;})
+        .attr("height", 50)
         .attr("width", 50)});
 
   var text = texts.selectAll(".text")

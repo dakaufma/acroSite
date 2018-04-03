@@ -15,6 +15,10 @@ text {
 </style>
 </head>
 <body>
+<div>
+  <div id="detailsBox" style="z-index: 1; position: absolute" >  </div>
+  <div id="svgContainer" />
+</div>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
 var w = window.innerWidth;
@@ -22,6 +26,7 @@ var h = window.innerHeight;
 
 var keys = true, keyl = true, keyc = true, keyp = true, keyb = true, keyx = true, key1 = true, key2 = true, key3 = true, key4 = true, key5 = true, key0 = true
 var sequencesFilter = []
+var infoLinkData;
 
 var focus_node = null, highlight_node = null;
 
@@ -53,12 +58,12 @@ var default_link_color = "#888";
 var nominal_base_node_size = 4;
 var nominal_text_size = 12;
 var max_text_size = 34;
-var nominal_stroke = .5;
+var nominal_stroke = 15;
 var max_stroke = 4.5;
 var max_base_node_size = 36;
 var min_zoom = .1;
 var max_zoom = 7;
-var svg = d3.select("body").append("svg");
+var svg = d3.select("#svgContainer").append("svg");
 
 // build the arrow.
 svg.append("svg:defs").selectAll("marker")
@@ -66,11 +71,12 @@ svg.append("svg:defs").selectAll("marker")
   .enter().append("svg:marker")    // This section adds in the arrows
   .attr("id", String)
   .attr("viewBox", "0 -5 10 10")
-  .attr("refX", 35)
-  .attr("refY", -1.5)
+  .attr("refX", 23)
+  .attr("refY", 0)
   .attr("markerWidth", 20)
   .attr("markerHeight", 33)
   .attr("orient", "auto")
+  .attr("markerUnits", "userSpaceOnUse") // avoid scaling markers with path stroke-width
   .append("svg:path")
   .attr("d", "M0,-5L10,0L0,5");
 var zoom = d3.behavior.zoom().scaleExtent([min_zoom,max_zoom]);
@@ -81,6 +87,19 @@ var links = g.append("g").attr("id", "links");
 var texts = g.append("g").attr("id", "texts");
 var nodes = g.append("g").attr("id", "nodes");
 svg.style("cursor","move");
+
+function updateInfoDisplay(d) {
+  var infoBox = d3.selectAll("#detailsBox");
+  infoBox.selectAll("*").remove();
+  var a = infoBox.selectAll("div")
+    .data(d.sequences)
+    .enter()
+    .append("div")
+    .style("clear", "both")
+    .append("a");
+  a.text(function (d) { return d.sequence_name; });
+  a.attr("href", function (d) { return d.video_url; });
+}
 
 d3.json("graph.json", function(error, graph) {
   var linkedByIndex = {};
@@ -117,6 +136,20 @@ d3.json("graph.json", function(error, graph) {
       else return default_link_color; })
     .style("fill", "none")
     .attr("marker-end", "url(#end)");
+
+  link.on('click', function(d) {
+    infoLinkData = d;
+    updateInfoDisplay(infoLinkData);
+  });
+  link.on('mouseover', function(d) {
+    if (!infoLinkData) {
+      infoLinkData = d;
+    }
+    updateInfoDisplay(d);
+  });
+  link.on('mouseout', function(d) {
+    updateInfoDisplay(infoLinkData);
+  });
 
   var node = nodes.selectAll(".node")
     .data(graph.nodes)

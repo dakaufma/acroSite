@@ -433,7 +433,10 @@ d3.json("graph.json", function(error, graph) {
       }
     }
 
-    force.links(graph.links.filter(link_vis));
+    force
+      .stop()
+      .links(graph.links.filter(link_vis))
+      .start();
   }
 
   function set_node_filter(sourceId, numLinks) {
@@ -454,10 +457,18 @@ d3.json("graph.json", function(error, graph) {
       next = [];
     }
 
+    node.each(function(d) { d.fixed = (d.id == sourceId); });
     nodeFilter = Array.from(all);
   }
 
-  set_node_filter("Bird", nodeFilterDistance);
+  initNodeId = "Bird";
+  d = node.filter(function(d) { return d.id == initNodeId }).datum();
+  set_node_filter(initNodeId, nodeFilterDistance);
+  sequencesFilter = d.sequences;
+  x = window.innerWidth/2 - d.x * zoom.scale();
+  y = window.innerHeight/2 - d.y * zoom.scale();
+  zoom.translate([x, y]);
+  g.attr("transform", "translate(" + x + "," + y + ")scale(" + zoom.scale() + ")");
   update_visibility();
 });
 

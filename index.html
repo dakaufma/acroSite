@@ -26,6 +26,7 @@ var h = window.innerHeight;
 
 var keys = true, keyl = true, keyc = true, keyp = true, keyb = true, keyx = true, key1 = true, key2 = true, key3 = true, key4 = true, key5 = true, key0 = true
 var sequencesFilter = []
+var nodeFilter = []
 var infoLinkData;
 
 var focus_node = null, highlight_node = null;
@@ -242,6 +243,7 @@ d3.json("graph.json", function(error, graph) {
       set_focus(d);
       if (highlight_node === null) set_highlight(d);
       sequencesFilter = d.sequences;
+      set_node_filter(d, 2);
       update_visibility();
     })
     .on("mouseout", function(d) {
@@ -429,12 +431,34 @@ d3.json("graph.json", function(error, graph) {
       }
     }
   }
+
+  function set_node_filter(source, numLinks) {
+    all = new Set([source.id])
+    current = [source.id]
+    next = []
+
+    for (var linksFollowed = 0; linksFollowed < numLinks; linksFollowed++) {
+      current.forEach(function(sourceId) {
+        graph.links.forEach(function(d) {
+          if (d.source.id == sourceId && !all.has(d.target.id)) {
+            next.push(d.target.id);
+            all.add(d.target.id);
+          }
+        });
+      });
+      current = next;
+      next = [];
+    }
+
+    nodeFilter = Array.from(all);
+  }
 });
 
 function vis(node) {
   return vis_by_position(node.position) &&
         vis_by_pose_difficulty(node.difficulty) &&
-        vis_by_sequence(node.sequences);
+        vis_by_sequence(node.sequences) &&
+        vis_by_node(node.id);
 }
 
 function vis_by_position(position) {
@@ -471,6 +495,14 @@ function vis_by_sequence(sequences) {
       }
     }
     return false;
+  }
+}
+
+function vis_by_node(node) {
+  if (nodeFilter.length === 0) {
+    return true;
+  } else {
+    return nodeFilter.indexOf(node) != -1;
   }
 }
 

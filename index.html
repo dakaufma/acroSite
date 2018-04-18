@@ -407,11 +407,12 @@ d3.json("graph.json", function(error, graph) {
   }
 
   function update_visibility() {
+    link_vis = function(d) {
+      return vis(d.source) && vis(d.target) && vis_by_link_score(d.score);
+    }
+
     link.style("display", function(d) {
-      var flag =
-        vis(d.source) &&
-        vis(d.target) &&
-        vis_by_link_score(d.score);
+      var flag = link_vis(d);
       linkedByIndex[d.source.index + "," + d.target.index] = flag;
       return flag ? "inline" : "none";
     });
@@ -430,6 +431,8 @@ d3.json("graph.json", function(error, graph) {
         exit_highlight();
       }
     }
+
+    force.links(graph.links.filter(link_vis));
   }
 
   function set_node_filter(source, numLinks) {

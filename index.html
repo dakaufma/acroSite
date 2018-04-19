@@ -69,7 +69,7 @@ svg.append("svg:defs").selectAll("marker")
   .enter().append("svg:marker")    // This section adds in the arrows
   .attr("id", String)
   .attr("viewBox", "0 -5 10 10")
-  .attr("refX", 23)
+  .attr("refX", nominal_base_node_size)
   .attr("refY", 0)
   .attr("markerWidth", 20)
   .attr("markerHeight", 33)
@@ -318,15 +318,13 @@ d3.json("graph.json", function(error, graph) {
     link.style("stroke-width",stroke);
     circle.style("stroke-width",stroke);
 
-    var base_radius = nominal_base_node_size;
-    if (nominal_base_node_size*zoom.scale()>max_base_node_size) base_radius = max_base_node_size/zoom.scale();
     circle.attr("d", d3.svg.symbol()
       .size(function(d) {
-        return Math.PI*Math.pow(base_radius,2); })
+        return Math.PI*Math.pow(nominal_base_node_size,2); })
       .type(function(d) { return d.type; }))
 
     if (!text_center) text.attr("dx", function(d) {
-      return (base_radius); });
+      return (nominal_base_node_size); });
 
     var text_size = nominal_text_size;
     if (nominal_text_size*zoom.scale()>max_text_size) text_size = max_text_size/zoom.scale();

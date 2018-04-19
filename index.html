@@ -56,8 +56,7 @@ var default_link_color = "#888";
 var nominal_base_node_size = 24;
 var nominal_text_size = 12;
 var max_text_size = 34;
-var nominal_stroke = 15;
-var max_stroke = 4.5;
+var nominal_stroke = 4.5;
 var max_base_node_size = 36;
 var min_zoom = .1;
 var max_zoom = 7;
@@ -78,7 +77,6 @@ svg.append("svg:defs").selectAll("marker")
   .append("svg:path")
   .attr("d", "M0,-5L10,0L0,5");
 var zoom = d3.behavior.zoom().scaleExtent([min_zoom,max_zoom]);
-zoom.scale(0.25);
 var g = svg.append("g");
 g.attr("transform", "scale(" + zoom.scale() + ")");
 var links = g.append("g").attr("id", "links");
@@ -313,10 +311,8 @@ d3.json("graph.json", function(error, graph) {
   }
 
   zoom.on("zoom", function() {
-    var stroke = nominal_stroke;
-    if (nominal_stroke*zoom.scale()>max_stroke) stroke = max_stroke/zoom.scale();
-    link.style("stroke-width",stroke);
-    circle.style("stroke-width",stroke);
+    link.style("stroke-width",nominal_stroke);
+    circle.style("stroke-width",nominal_stroke);
 
     circle.attr("d", d3.svg.symbol()
       .size(function(d) {

@@ -45,10 +45,6 @@ var color = d3.scale.linear()
 var highlight_color = "blue";
 var highlight_trans = 0.1;
 
-var size = d3.scale.pow().exponent(1)
-  .domain([1,350])
-  .range([1,137]);
-
 var force = d3.layout.force()
   .linkDistance(50)
   .charge(-5000)
@@ -57,7 +53,7 @@ var force = d3.layout.force()
 var default_node_color = "#ccc";
 //var default_node_color = "rgb(3,190,100)";
 var default_link_color = "#888";
-var nominal_base_node_size = 4;
+var nominal_base_node_size = 24;
 var nominal_text_size = 12;
 var max_text_size = 34;
 var nominal_stroke = 15;
@@ -176,12 +172,11 @@ d3.json("graph.json", function(error, graph) {
 
   var circle = node.append("path")
     .attr("d", d3.svg.symbol()
-      .size(function(d) { return Math.PI*Math.pow(size(d.size)||nominal_base_node_size,2); })
+      .size(function(d) { return Math.PI*Math.pow(nominal_base_node_size,2); })
       .type(function(d) { return d.type; }))
     .style(tocolor, function(d) {
       if (isNumber(d.score) && d.score>=0) return color(d.score);
       else return default_node_color; })
-  //.attr("r", function(d) { return size(d.size)||nominal_base_node_size; })
     .style("stroke-width", nominal_stroke)
     .style(towhite, "white");
 
@@ -231,7 +226,7 @@ d3.json("graph.json", function(error, graph) {
     text.text(function(d) { return d.id; })
       .style("text-anchor", "middle");
   } else {
-    text.attr("dx", function(d) {return (size(d.size)||nominal_base_node_size);})
+    text.attr("dx", function(d) {return nominal_base_node_size;})
       .text(function(d) { return '\u2002'+d.id; });
   }
 
@@ -327,12 +322,11 @@ d3.json("graph.json", function(error, graph) {
     if (nominal_base_node_size*zoom.scale()>max_base_node_size) base_radius = max_base_node_size/zoom.scale();
     circle.attr("d", d3.svg.symbol()
       .size(function(d) {
-        return Math.PI*Math.pow(size(d.size)*base_radius/nominal_base_node_size||base_radius,2); })
+        return Math.PI*Math.pow(base_radius,2); })
       .type(function(d) { return d.type; }))
 
-    //circle.attr("r", function(d) { return (size(d.size)*base_radius/nominal_base_node_size||base_radius); })
     if (!text_center) text.attr("dx", function(d) {
-      return (size(d.size)*base_radius/nominal_base_node_size||base_radius); });
+      return (base_radius); });
 
     var text_size = nominal_text_size;
     if (nominal_text_size*zoom.scale()>max_text_size) text_size = max_text_size/zoom.scale();

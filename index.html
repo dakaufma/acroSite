@@ -54,6 +54,8 @@ var default_node_color = "#ccc";
 //var default_node_color = "rgb(3,190,100)";
 var default_link_color = "#888";
 var nominal_base_node_size = 24;
+var marker_height_over_width = 1.5;
+var marker_height_over_node_size = 1;
 var nominal_text_size = 12;
 var max_text_size = 34;
 var nominal_stroke = 4.5;
@@ -63,15 +65,17 @@ var max_zoom = 7;
 var svg = d3.select("#svgContainer").append("svg");
 
 // build the arrow.
+marker_height = marker_height_over_node_size * nominal_base_node_size;
+marker_width = marker_height / marker_height_over_width;
 svg.append("svg:defs").selectAll("marker")
   .data(["end"])      // Different link/path types can be defined here
   .enter().append("svg:marker")    // This section adds in the arrows
   .attr("id", String)
   .attr("viewBox", "0 -5 10 10")
-  .attr("refX", nominal_base_node_size)
+  .attr("refX", nominal_base_node_size + nominal_stroke / 2)
   .attr("refY", 0)
-  .attr("markerWidth", 20)
-  .attr("markerHeight", 33)
+  .attr("markerWidth", marker_width)
+  .attr("markerHeight", marker_height)
   .attr("orient", "auto")
   .attr("markerUnits", "userSpaceOnUse") // avoid scaling markers with path stroke-width
   .append("svg:path")

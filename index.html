@@ -152,25 +152,24 @@ d3.json("graph.json").then(function(graph) {
   var node = nodes.selectAll(".node")
     .data(graph.nodes)
     .enter().append("g")
-    .attr("class", "node");
-// Add support for dragging -- for some reason this stops click events from propagating and breaks other functionality
-//    .call(d3.drag()
-//      .on("start", function(d) {
-//        force.alphaTarget(0.8).restart();
-//        node.each(function(d) {
-//          d.fx = undefined;
-//          d.fy = undefined;
-//        });
-//        d.fx = d.x;
-//        d.fy = d.y;
-//      })
-//      .on("drag", function(d) {
-//        d.fx = d3.event.x;
-//        d.fy = d3.event.y;
-//      })
-//      .on("end", function(d) {
-//        force.alphaTarget(0);
-//      }));
+    .attr("class", "node")
+    .call(d3.drag()
+      .on("start", function(d) {
+        force.alphaTarget(0.8).restart();
+        node.each(function(d) {
+          d.fx = undefined;
+          d.fy = undefined;
+        });
+        d.fx = d.x;
+        d.fy = d.y;
+      })
+      .on("drag", function(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+      })
+      .on("end", function(d) {
+        force.alphaTarget(0);
+      }));
 
   node.on("dblclick.zoom", function(d) { d3.event.stopPropagation();
     zoom.translateTo(svg, d.x, d.y);
@@ -245,8 +244,8 @@ d3.json("graph.json").then(function(graph) {
   node
     .on("mouseover", function(d) {
       set_highlight(d); })
-    .on("mousedown", function(d) {
-      d3.event.stopPropagation();
+    .on("click", function(d) {
+      //d3.event.stopPropagation();
       //focus_node = d;
       set_focus(d);
       if (highlight_node === null) set_highlight(d);

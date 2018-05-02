@@ -246,11 +246,11 @@ d3.json("graph.json").then(function(graph) {
       set_highlight(d); })
     .on("click", function(d) {
       //d3.event.stopPropagation();
-      //focus_node = d;
+      focus_node = d;
       set_focus(d);
       if (highlight_node === null) set_highlight(d);
       sequencesFilter = d.sequences;
-      set_node_filter(d.id, nodeFilterDistance);
+      set_node_filter(d.id, nodeFilterDistance, nodeFilterDistance);
       update_visibility();
     })
     .on("mouseout", function(d) {
@@ -405,7 +405,11 @@ d3.json("graph.json").then(function(graph) {
 
   function update_visibility() {
     link_vis = function(d) {
-      return vis(d.source) && vis(d.target) && vis_by_link_score(d.score);
+      if (focus_node) {
+        return d.source == focus_node && vis(d.target) || d.target == focus_node && vis(d.source);
+      } else {
+        return vis(d.source) && vis(d.target) && vis_by_link_score(d.score);
+      }
     }
 
     link.style("display", function(d) {
@@ -435,17 +439,32 @@ d3.json("graph.json").then(function(graph) {
     force.alpha(0.5);
   }
 
-  function set_node_filter(sourceId, numLinks) {
+  function set_node_filter(sourceId, linksForward, linksBackwards) {
     all = new Set([sourceId])
-    current = [sourceId]
     next = []
+    console.log(linksForward, linksBackwards)
 
-    for (var linksFollowed = 0; linksFollowed < numLinks; linksFollowed++) {
+    current = [sourceId]
+    for (var linksFollowed = 0; linksFollowed < linksForward; linksFollowed++) {
       current.forEach(function(currentId) {
         graph.links.forEach(function(d) {
           if (d.source.id == currentId && !all.has(d.target.id)) {
             next.push(d.target.id);
             all.add(d.target.id);
+          }
+        });
+      });
+      current = next;
+      next = [];
+    }
+
+    current = [sourceId]
+    for (var linksFollowed = 0; linksFollowed < linksBackwards; linksFollowed++) {
+      current.forEach(function(currentId) {
+        graph.links.forEach(function(d) {
+          if (d.target.id == currentId && !all.has(d.source.id)) {
+            next.push(d.source.id);
+            all.add(d.source.id);
           }
         });
       });
@@ -462,7 +481,8 @@ d3.json("graph.json").then(function(graph) {
 
   initNodeId = "Bird";
   d = node.filter(function(d) { return d.id == initNodeId }).datum();
-  set_node_filter(initNodeId, nodeFilterDistance);
+  focus_node = d;
+  set_node_filter(initNodeId, nodeFilterDistance, nodeFilterDistance);
   sequencesFilter = d.sequences;
   zoom.translateTo(svg, d.x, d.y);
   update_visibility();

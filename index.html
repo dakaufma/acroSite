@@ -12,11 +12,35 @@ text {
   font-family: sans-serif;
   pointer-events: none;
 }
+
+#detailsBox {
+  z-index: 1;
+  position: absolute;
+  height:100%;
+  width: 30%;
+  background-color: #fff;
+  border-right-style: solid;
+  border-right-width: 4px;
+}
+
+.box {
+  clear: all;
+}
+
 </style>
 </head>
 <body>
 <div>
-  <div id="detailsBox" style="z-index: 1; position: absolute" >  </div>
+  <div id="detailsBox">
+    <div class="box">
+      <h1> Filter </h1>
+      <div id="filterBox"> </div>
+    </div>
+    <hr />
+    <div class="box">
+      <div id="infoBox"> </div>
+    </div>
+  </div>
   <div id="svgContainer" />
 </div>
 <script src="https://d3js.org/d3.v5.min.js"></script>
@@ -83,19 +107,6 @@ var links = g.append("g").attr("id", "links");
 var texts = g.append("g").attr("id", "texts");
 var nodes = g.append("g").attr("id", "nodes");
 svg.style("cursor","move");
-
-function updateInfoDisplay(d) {
-  var infoBox = d3.selectAll("#detailsBox");
-  infoBox.selectAll("*").remove();
-  var a = infoBox.selectAll("div")
-    .data(d.sequences)
-    .enter()
-    .append("div")
-    .style("clear", "both")
-    .append("a");
-  a.text(function (d) { return d.sequence_name; });
-  a.attr("href", function (d) { return d.video_url; });
-}
 
 d3.json("graph.json").then(function(graph) {
   var linkedByIndex = {};
@@ -251,6 +262,7 @@ d3.json("graph.json").then(function(graph) {
       if (highlight_node === null) set_highlight(d);
       sequencesFilter = d.sequences;
       set_node_filter(d.id, nodeFilterDistance, nodeFilterDistance);
+      fill_pose_info(d);
       update_visibility();
     })
     .on("mouseout", function(d) {
@@ -442,7 +454,6 @@ d3.json("graph.json").then(function(graph) {
   function set_node_filter(sourceId, linksForward, linksBackwards) {
     all = new Set([sourceId])
     next = []
-    console.log(linksForward, linksBackwards)
 
     current = [sourceId]
     for (var linksFollowed = 0; linksFollowed < linksForward; linksFollowed++) {
@@ -483,6 +494,7 @@ d3.json("graph.json").then(function(graph) {
   d = node.filter(function(d) { return d.id == initNodeId }).datum();
   focus_node = d;
   set_node_filter(initNodeId, nodeFilterDistance, nodeFilterDistance);
+  fill_pose_info(d);
   sequencesFilter = d.sequences;
   zoom.translateTo(svg, d.x, d.y);
   update_visibility();
@@ -547,6 +559,37 @@ function vis_by_link_score(score) {
     else if (score>=0) return keyx;
   }
   return true;
+}
+
+function fill_pose_info(d) {
+  console.log(d);
+  var infoBox = d3.selectAll("#infoBox");
+  infoBox.selectAll("*").remove();
+  infoBox
+    .append("div") // Name
+    .append("h1")
+    .text(d.id)
+    .style("")
+  ;
+  infoBox
+    .append("div") // Image
+    .append("img")
+    .attr("src", d.img)
+    .style("width", "100%");
+  infoBox
+    .append("div") // Sequences header
+    .append("h1")
+    .text("Sequences");
+  infoBox
+    .append("div") // Sequences
+    .selectAll("div")
+    .data(d.sequences)
+    .enter()
+    .append("div")
+    .attr("class", "box")
+    .append("a")
+    .text(function (d) { return d.sequence_name; })
+    .attr("href", function (d) { return d.video_url; });
 }
 
 function isNumber(n) {

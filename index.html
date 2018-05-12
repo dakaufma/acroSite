@@ -269,6 +269,47 @@ d3.json("graph.json").then(function(graph) {
       update_visibility();
   });
 
+  function fill_pose_info(d) {
+    var infoBox = d3.selectAll("#infoBox");
+    infoBox.selectAll("*").remove();
+    infoBox
+      .append("div") // Name
+      .append("h1")
+      .text(d.id)
+      .style("")
+    ;
+    infoBox
+      .append("div") // Image
+      .append("img")
+      .attr("src", d.img)
+      .style("width", "100%");
+    infoBox
+      .append("div") // Sequences header
+      .append("h1")
+      .text("Sequences");
+    links = graph.links.filter(function (d) { return d.source == focus_node; });
+    console.log(links);
+    dest_link = infoBox
+      .append("div") // Destination node names
+      .selectAll("div")
+      .data(links)
+      .enter()
+      .append("div");
+    dest_link
+      .append("h4")
+      .text(function(d) { return d.target.id; });
+    dest_link
+      .append("div") // Sequences transitioning to that node
+      .selectAll("div")
+      .data(function(d) { return d.sequences; })
+      .enter()
+      .append("div")
+      .attr("class", "box")
+      .append("a")
+      .text(function(d) { return d.sequence_name; })
+      .attr("href", function (d) { return d.video_url; });
+  }
+
   function exit_highlight() {
     highlight_node = null;
     if (focus_node===null) {
@@ -402,15 +443,15 @@ d3.json("graph.json").then(function(graph) {
     }
   }
 
-  function update_visibility() {
-    link_vis = function(d) {
-      if (focus_node) {
-        return d.source == focus_node && vis(d.target) || d.target == focus_node && vis(d.source);
-      } else {
-        return vis(d.source) && vis(d.target) && vis_by_link_score(d.score);
-      }
+  function link_vis(d) {
+    if (focus_node) {
+      return d.source == focus_node && vis(d.target) || d.target == focus_node && vis(d.source);
+    } else {
+      return vis(d.source) && vis(d.target) && vis_by_link_score(d.score);
     }
+  }
 
+  function update_visibility() {
     link.style("display", function(d) {
       var flag = link_vis(d);
       linkedByIndex[d.source.index + "," + d.target.index] = flag;
@@ -555,36 +596,6 @@ function vis_by_link_score(score) {
     else if (score>=0) return keyx;
   }
   return true;
-}
-
-function fill_pose_info(d) {
-  var infoBox = d3.selectAll("#infoBox");
-  infoBox.selectAll("*").remove();
-  infoBox
-    .append("div") // Name
-    .append("h1")
-    .text(d.id)
-    .style("")
-  ;
-  infoBox
-    .append("div") // Image
-    .append("img")
-    .attr("src", d.img)
-    .style("width", "100%");
-  infoBox
-    .append("div") // Sequences header
-    .append("h1")
-    .text("Sequences");
-  infoBox
-    .append("div") // Sequences
-    .selectAll("div")
-    .data(d.sequences)
-    .enter()
-    .append("div")
-    .attr("class", "box")
-    .append("a")
-    .text(function (d) { return d.sequence_name; })
-    .attr("href", function (d) { return d.video_url; });
 }
 
 function isNumber(n) {

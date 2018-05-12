@@ -319,7 +319,7 @@ d3.json("graph.json").then(function(graph) {
     other = function(link) {
       return link.source == focus_node ? link.target : link.source;
     };
-    links = graph.links.filter(link_vis);
+    links = graph.links.filter(link_vis).sort(function (a, b) { return other(a).id.localeCompare(other(b).id); });
     dest_link = infoBox
       .append("div") // Connected node names
       .selectAll("div")

@@ -319,20 +319,34 @@ d3.json("graph.json").then(function(graph) {
     other = function(link) {
       return link.source == focus_node ? link.target : link.source;
     };
-    links = graph.links.filter(link_vis).sort(function (a, b) { return other(a).id.localeCompare(other(b).id); });
-    dest_link = infoBox
+    links = graph.links.filter(link_vis);
+    dest_nodes = Array.from(new Set(links.map(function (d) { return other(d).id; })));
+    dest_nodes.sort(function(a, b) { return a.localeCompare(b); });
+    dest_node = infoBox
       .append("div") // Connected node names
       .selectAll("div")
-      .data(links)
+      .data(dest_nodes)
       .enter()
       .append("div");
-    dest_link
+    dest_node
       .append("h4")
-      .text(function(d) { return other(d).id; });
-    dest_link
+      .text(function(d) { return d; });
+    dest_node
       .append("div") // Sequences transitioning to that node
       .selectAll("div")
-      .data(function(d) { return d.sequences; })
+      .data(function(d) {
+        dup_seq = links
+          .filter(function(d2) { return other(d2).id == d; })
+          .reduce(function (a, b) { return a.concat(b.sequences); }, [])
+          .sort(function (a, b) { return a.sequence_name.localeCompare(b.sequence_name); });
+        seq = []
+        for (var i = 0; i < dup_seq.length; i++) {
+          if (i == 0 || seq[seq.length - 1].sequence_name != dup_seq[i].sequence_name) {
+            seq.push(dup_seq[i]);
+          }
+        }
+        return seq;
+      })
       .enter()
       .append("div")
       .attr("class", "box")

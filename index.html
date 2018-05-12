@@ -34,8 +34,9 @@ text {
 <div>
   <div id="detailsBox">
     <div class="box">
-      <h1> Filter </h1>
-      <div id="filterBox"> </div>
+      <h1> Search </h1>
+      <datalist id="searchList"> </datalist>
+      <input type="text" id="searchBox" list="searchList" />
     </div>
     <hr />
     <div class="box">
@@ -53,7 +54,6 @@ var keys = true, keyl = true, keyc = true, keyp = true, keyb = true, keyx = true
 var sequencesFilter = [];
 var nodeFilterDistance = 1;
 var nodeFilter = [];
-var infoLinkData;
 
 var focus_node = null, highlight_node = null;
 
@@ -146,20 +146,6 @@ d3.json("graph.json").then(function(graph) {
       else return default_link_color; })
     .style("fill", "none")
     .attr("marker-end", "url(#end)");
-
-  link.on('click', function(d) {
-    infoLinkData = d;
-    updateInfoDisplay(infoLinkData);
-  });
-  link.on('mouseover', function(d) {
-    if (!infoLinkData) {
-      infoLinkData = d;
-    }
-    updateInfoDisplay(d);
-  });
-  link.on('mouseout', function(d) {
-    updateInfoDisplay(infoLinkData);
-  });
 
   var node = nodes.selectAll(".node")
     .data(graph.nodes)
@@ -491,6 +477,15 @@ d3.json("graph.json").then(function(graph) {
     nodeFilter = Array.from(all);
   }
 
+  // Init search box
+  var searchList = d3.selectAll("#searchList");
+  searchList
+    .selectAll("option")
+    .data(graph.nodes)
+    .enter()
+    .append("option")
+    .attr("value", function(d) { return d.id });
+
   initNodeId = "Bird";
   d = node.filter(function(d) { return d.id == initNodeId }).datum();
   focus_node = d;
@@ -563,7 +558,6 @@ function vis_by_link_score(score) {
 }
 
 function fill_pose_info(d) {
-  console.log(d);
   var infoBox = d3.selectAll("#infoBox");
   infoBox.selectAll("*").remove();
   infoBox

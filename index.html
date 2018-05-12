@@ -132,8 +132,8 @@ d3.json("graph.json").then(function(graph) {
   force
     .nodes(graph.nodes)
     .force("link", d3.forceLink(graph.links)
-      .distance(2 * nominal_base_node_size))
-    .force("collision", d3.forceCollide(nominal_base_node_size * 3)
+      .distance(4 * nominal_base_node_size))
+    .force("collision", d3.forceCollide(nominal_base_node_size * 4)
       .iterations(3));
 
   var link = links.selectAll(".link")

@@ -35,9 +35,7 @@ text {
   <div id="detailsBox">
     <div class="box">
       <h1> Search </h1>
-      <datalist id="searchList"> </datalist>
-      <input type="text" id="searchBox" list="searchList" />
-      <div id="selectBox"></div>
+      <div id="searchBox"></div>
     </div>
     <hr />
     <div class="box">
@@ -252,14 +250,7 @@ d3.json("graph.json").then(function(graph) {
       fill_pose_info();
     })
     .on("click", function(d) {
-      //d3.event.stopPropagation();
-      focus_node = d;
-      set_focus(d);
-      highlight_node = null;
-      sequencesFilter = d.sequences;
-      set_node_filter(d.id, nodeFilterDistance);
-      fill_pose_info();
-      update_visibility();
+      set_node(d.id);
     })
     .on("mouseout", function(d) {
       highlight_node = null;
@@ -283,9 +274,7 @@ d3.json("graph.json").then(function(graph) {
       .property("checked", filterToNode)
       .on("change", function() {
         filterToNode = d3.select("#filterToNode").property("checked");
-        set_node_filter(focus_node.id, nodeFilterDistance);
-        fill_pose_info();
-        update_visibility();
+        set_node(focus_node.id);
       });
     toCheckboxContainer
       .append("label")
@@ -298,9 +287,7 @@ d3.json("graph.json").then(function(graph) {
       .property("checked", filterFromNode)
       .on("change", function() {
         filterFromNode = d3.select("#filterFromNode").property("checked");
-        set_node_filter(focus_node.id, nodeFilterDistance);
-        fill_pose_info();
-        update_visibility();
+        set_node(focus_node.id);
       });
     fromCheckboxContainer
       .append("label")
@@ -363,21 +350,15 @@ d3.json("graph.json").then(function(graph) {
       .attr("href", function (d) { return d.video_url; });
   }
 
-  function set_focus(d) {	
-    return;
-    if (highlight_trans < 1)  {
-      circle.style("opacity", function(o) {
-        return isConnected(d, o) ? 1 : highlight_trans;
-      });
-
-      text.style("opacity", function(o) {
-        return isConnected(d, o) ? 1 : highlight_trans;
-      });
-
-      link.style("opacity", function(o) {
-        return o.source.index == d.index || o.target.index == d.index ? 1 : highlight_trans;
-      });		
-    }
+  function set_node(id) {
+    d = node.filter(function(d) { return d.id == id }).datum();
+    focus_node = d;
+    set_node_filter(id, nodeFilterDistance);
+    fill_pose_info();
+    $('#searchBox').val(id).trigger('change');
+    sequencesFilter = d.sequences;
+    zoom.translateTo(svg, d.x, d.y);
+    update_visibility();
   }
 
 
@@ -537,15 +518,8 @@ d3.json("graph.json").then(function(graph) {
   }
 
   // Init search box
-  var searchList = d3.selectAll("#searchList");
-  searchList
-    .selectAll("option")
-    .data(graph.nodes)
-    .enter()
-    .append("option")
-    .attr("value", function(d) { return d.id });
-  var selectBox = d3.selectAll("#selectBox");
-  selectBox
+  var searchBox = d3.selectAll("#searchBox");
+  searchBox
     .selectAll("option")
     .data([{id: ''}].concat(graph.nodes))
     .enter()
@@ -553,30 +527,16 @@ d3.json("graph.json").then(function(graph) {
     .attr("value", function(d) { return d.id })
     .text(function(d) { return d.id });
   $(document).ready(function() {
-    $('#selectBox').select2({
+    $('#searchBox').select2({
       placeholder: 'Search',
       allowClear: true
     });
-    $("#selectBox").on("select2:select", function(e) {
-      var id = e.params.data.id;
-      d = node.filter(function(d) { return d.id == id }).datum();
-      focus_node = d;
-      set_node_filter(id, nodeFilterDistance);
-      fill_pose_info();
-      sequencesFilter = d.sequences;
-      zoom.translateTo(svg, d.x, d.y);
-      update_visibility();
+    $("#searchBox").on("select2:select", function(e) {
+      set_node(e.params.data.id);
     });
   })
 
-  initNodeId = "Bird";
-  d = node.filter(function(d) { return d.id == initNodeId }).datum();
-  focus_node = d;
-  set_node_filter(initNodeId, nodeFilterDistance);
-  fill_pose_info();
-  sequencesFilter = d.sequences;
-  zoom.translateTo(svg, d.x, d.y);
-  update_visibility();
+  set_node("Bird")
 });
 
 function vis(node) {

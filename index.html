@@ -37,6 +37,7 @@ text {
       <h1> Search </h1>
       <datalist id="searchList"> </datalist>
       <input type="text" id="searchBox" list="searchList" />
+      <div id="selectBox"></div>
     </div>
     <hr />
     <div class="box">
@@ -45,6 +46,9 @@ text {
   </div>
   <div id="svgContainer" />
 </div>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script>
 var w = window.innerWidth;
@@ -262,10 +266,6 @@ d3.json("graph.json").then(function(graph) {
       fill_pose_info();
     });
 
-  d3.select(window).on("mouseup", function() {
-      update_visibility();
-  });
-
   function fill_pose_info() {
     d = focus_node;
     var infoBox = d3.selectAll("#infoBox");
@@ -400,7 +400,7 @@ d3.json("graph.json").then(function(graph) {
 
   resize();
   //window.focus();
-  d3.select(window).on("resize", resize).on("keydown", keydown);
+  svg.on("resize", resize).on("keydown", keydown);
 
   force.on("tick", function() {
     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
@@ -442,6 +442,7 @@ d3.json("graph.json").then(function(graph) {
     if (d3.event.keyCode==32) {
       force.stop();
     } else if (d3.event.keyCode>=48 && d3.event.keyCode<=90 && !d3.event.ctrlKey && !d3.event.altKey && !d3.event.metaKey) {
+      var handled = true;
       switch (String.fromCharCode(d3.event.keyCode)) {
         case "S": keys = !keys; break;
         case "L": keyl = !keyl; break;
@@ -455,9 +456,12 @@ d3.json("graph.json").then(function(graph) {
         case "2": key2 = !key2; break;
         case "3": key3 = !key3; break;
         case "0": key0 = !key0; break;
+        default: hanlded = false; break;
       }
 
-      update_visibility();
+      if (handled) {
+        update_visibility();
+      }
     }
   }
 
@@ -540,6 +544,30 @@ d3.json("graph.json").then(function(graph) {
     .enter()
     .append("option")
     .attr("value", function(d) { return d.id });
+  var selectBox = d3.selectAll("#selectBox");
+  selectBox
+    .selectAll("option")
+    .data([{id: ''}].concat(graph.nodes))
+    .enter()
+    .append("option")
+    .attr("value", function(d) { return d.id })
+    .text(function(d) { return d.id });
+  $(document).ready(function() {
+    $('#selectBox').select2({
+      placeholder: 'Search',
+      allowClear: true
+    });
+    $("#selectBox").on("select2:select", function(e) {
+      var id = e.params.data.id;
+      d = node.filter(function(d) { return d.id == id }).datum();
+      focus_node = d;
+      set_node_filter(id, nodeFilterDistance);
+      fill_pose_info();
+      sequencesFilter = d.sequences;
+      zoom.translateTo(svg, d.x, d.y);
+      update_visibility();
+    });
+  })
 
   initNodeId = "Bird";
   d = node.filter(function(d) { return d.id == initNodeId }).datum();

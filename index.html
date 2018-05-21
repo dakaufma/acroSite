@@ -519,11 +519,32 @@ d3.json("graph.json").then(function(graph) {
 
   // Init search box
   $(document).ready(function() {
+    sorter = function(results, container, query) {
+      if (query.term) {
+        // Sort by match index
+        // Break ties with alphabetical order
+        return results.sort(function(a, b) {
+          aText = a.text.toLowerCase();
+          bText = b.text.toLowerCase();
+          qText = query.term.toLowerCase();
+
+          aIndex = aText.indexOf(qText);
+          bIndex = bText.indexOf(qText);
+          if (aIndex != bIndex) {
+            return aIndex - bIndex;
+          } else {
+            return aText.localeCompare(bText);
+          }
+        });
+      }
+      return results;
+    };
     var data = graph.nodes.map(function(x) { return {id: x.id, text: x.id}});
     $('#searchBox').select2({
       data: data,
       placeholder: 'Search',
-      allowClear: true
+      allowClear: true,
+      sortResults: sorter
     });
     $("#searchBox").on("select2-selecting", function(e) {
       set_node(e.val);

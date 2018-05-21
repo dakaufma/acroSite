@@ -35,7 +35,7 @@ text {
   <div id="detailsBox">
     <div class="box">
       <h1> Search </h1>
-      <div id="searchBox"></div>
+      <div id="searchBox" style="width: 100%"></div>
     </div>
     <hr />
     <div class="box">
@@ -45,8 +45,8 @@ text {
   <div id="svgContainer" />
 </div>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.min.css"></link>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.min.js"></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script>
 var w = window.innerWidth;
@@ -518,21 +518,15 @@ d3.json("graph.json").then(function(graph) {
   }
 
   // Init search box
-  var searchBox = d3.selectAll("#searchBox");
-  searchBox
-    .selectAll("option")
-    .data([{id: ''}].concat(graph.nodes))
-    .enter()
-    .append("option")
-    .attr("value", function(d) { return d.id })
-    .text(function(d) { return d.id });
   $(document).ready(function() {
+    var data = graph.nodes.map(function(x) { return {id: x.id, text: x.id}});
     $('#searchBox').select2({
+      data: data,
       placeholder: 'Search',
       allowClear: true
     });
-    $("#searchBox").on("select2:select", function(e) {
-      set_node(e.params.data.id);
+    $("#searchBox").on("select2-selecting", function(e) {
+      set_node(e.val);
     });
   })
 

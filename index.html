@@ -17,11 +17,10 @@ text {
   z-index: 1;
   position: absolute;
   height:100%;
-  width: 30%;
   background-color: #fff;
   border-right-style: solid;
   border-right-width: 4px;
-  overflow-x: auto;
+  overflow-y: scroll;
 }
 
 .box {
@@ -32,7 +31,7 @@ text {
 </head>
 <body>
 <div>
-  <div id="detailsBox">
+  <div id="detailsBox" style="float: left">
     <div class="box">
       <h1> Search </h1>
       <div id="searchBox" style="width: 100%"></div>
@@ -42,15 +41,13 @@ text {
       <div id="infoBox"> </div>
     </div>
   </div>
-  <div id="svgContainer" />
+  <div id="svgContainer" style="float: right" />
 </div>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.min.css"></link>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.min.js"></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script>
-var w = window.innerWidth;
-var h = window.innerHeight;
 
 var keys = true, keyl = true, keyc = true, keyp = true, keyb = true, keyx = true, key1 = true, key2 = true, key3 = true, key4 = true, key5 = true, key0 = true
 var sequencesFilter = [];
@@ -89,6 +86,7 @@ var max_base_node_size = 36;
 var min_zoom = .1;
 var max_zoom = 7;
 var svg = d3.select("#svgContainer").append("svg");
+var details_proportion = .3;
 
 // build the arrow.
 marker_height = marker_height_over_node_size * nominal_base_node_size;
@@ -114,6 +112,8 @@ var nodes = g.append("g").attr("id", "nodes");
 svg.style("cursor","move");
 
 d3.json("graph.json").then(function(graph) {
+  d3.select('#detailsBox').style("width", details_proportion * 100 + "%");
+
   var linkedByIndex = {};
   graph.links.forEach(function(d) {
     linkedByIndex[d.source + "," + d.target] = true;
@@ -380,8 +380,8 @@ d3.json("graph.json").then(function(graph) {
   svg.call(zoom);	  
 
   resize();
-  //window.focus();
-  svg.on("resize", resize).on("keydown", keydown);
+  d3.select(window).on("resize", resize);
+  svg.on("keydown", keydown);
 
   force.on("tick", function() {
     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
@@ -412,11 +412,9 @@ d3.json("graph.json").then(function(graph) {
   });
 
   function resize() {
-    var width = window.innerWidth, height = window.innerHeight;
-    svg.attr("width", width).attr("height", height);
-
-    w = width;
-    h = height;
+    svg
+      .attr("width", window.innerWidth * (1 - details_proportion))
+      .attr("height", window.innerHeight);
   }
 
   function keydown() {

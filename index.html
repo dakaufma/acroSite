@@ -149,24 +149,24 @@ d3.json("graph.json").then(function(graph) {
   var node = nodes.selectAll(".node")
     .data(state.nodes)
     .enter().append("g")
-    .attr("class", "node")
-    .call(d3.drag()
-      .on("start", function(d) {
-        force.alphaTarget(0.8).restart();
-        node.each(function(d) {
-          d.fx = undefined;
-          d.fy = undefined;
-        });
-        d.fx = d.x;
-        d.fy = d.y;
-      })
-      .on("drag", function(d) {
-        d.fx = d3.event.x;
-        d.fy = d3.event.y;
-      })
-      .on("end", function(d) {
-        force.alphaTarget(0);
-      }));
+    .attr("class", "node");
+    //.call(d3.drag()
+    //  .on("start", function(d) {
+    //    force.alphaTarget(0.8).restart();
+    //    node.each(function(d) {
+    //      d.fx = undefined;
+    //      d.fy = undefined;
+    //    });
+    //    d.fx = d.x;
+    //    d.fy = d.y;
+    //  })
+    //  .on("drag", function(d) {
+    //    d.fx = d3.event.x;
+    //    d.fy = d3.event.y;
+    //  })
+    //  .on("end", function(d) {
+    //    force.alphaTarget(0);
+    //  }));
 
   node.on("dblclick.zoom", function(d) { d3.event.stopPropagation();
     zoom.translateTo(svg, d.x, d.y);

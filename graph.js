@@ -22,11 +22,15 @@ class Graph {
 var sequencesFilter = [];
   }
 
+  nodeFromName(name) {
+    return this.nodes.filter(function(d) { return d.id == name })[0];
+  }
+
   set_node_filter(sourceId) {
     this.focus_name = sourceId;
     var numLinks = this.nodeFilterDistance;
 
-    var d = this.nodes.filter(function(d) { return d.id == sourceId })[0];
+    var d = this.nodeFromName(sourceId);
     this.sequencesFilter = d.sequences;
 
     var all = new Set([sourceId])

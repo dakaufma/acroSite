@@ -66,8 +66,9 @@ class NodeInfo {
       .text("Sequences");
 
     // utility code
+    var localFocusName = this.graph.focus_name;
     var other = function(link) {
-      return link.source == focus_node ? link.target : link.source;
+      return link.source.id == localFocusName ? link.target : link.source;
     };
     links = this.graph.links.filter(this.graph.link_vis.bind(this.graph));
     var dest_nodes = Array.from(new Set(links.map(function (d) { return other(d).id; })));

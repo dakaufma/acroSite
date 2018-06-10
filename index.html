@@ -54,7 +54,7 @@ text {
 <script src="graph.js"></script>
 <script>
 
-var focus_node = null, highlight_node = null;
+var highlight_node = null;
 
 var text_center = false;
 var outline = false;
@@ -243,9 +243,9 @@ d3.json("graph.json").then(function(graph_json) {
 
   node
     .on("mouseover", function(d) {
-      if (focus_node != d) {
+      if (graph.focus_name != d.id) {
         highlight_node = d;
-        nodeInfo.setNodes(focus_node, highlight_node);
+        nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), highlight_node);
       }
     })
     .on("click", function(d) {
@@ -254,7 +254,7 @@ d3.json("graph.json").then(function(graph_json) {
     .on("mouseout", function(d) {
       // if (highlight_node) {
       //   highlight_node = null;
-      //   nodeInfo.setNodes(focus_node, highlight_node);
+      //   nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), highlight_node);
       // }
     });
 
@@ -274,7 +274,7 @@ d3.json("graph.json").then(function(graph_json) {
       .property("checked", graph.filterToNode)
       .on("change", function() {
         graph.filterToNode = d3.select("#filterToNode").property("checked");
-        set_node(focus_node.id);
+        set_node(graph.focus_name);
       });
     toCheckboxContainer
       .append("label")
@@ -287,7 +287,7 @@ d3.json("graph.json").then(function(graph_json) {
       .property("checked", graph.filterFromNode)
       .on("change", function() {
         graph.filterFromNode = d3.select("#filterFromNode").property("checked");
-        set_node(focus_node.id);
+        set_node(graph.focus_name);
       });
     fromCheckboxContainer
       .append("label")
@@ -297,14 +297,13 @@ d3.json("graph.json").then(function(graph_json) {
 
   function set_node(id) {
     d = node.filter(function(d) { return d.id == id }).datum();
-    focus_node = d;
     highlight_node = null;
     graph.set_node_filter(id);
     node.each(function(d) {
       d.fx = (d.id == id) ? d.x : undefined;
       d.fy = (d.id == id) ? d.y : undefined;
     });
-    nodeInfo.setNodes(focus_node, highlight_node);
+    nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), highlight_node);
     $('#searchBox').val(id).trigger('change');
     zoom.translateTo(svg, d.x, d.y);
     update_visibility();

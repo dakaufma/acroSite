@@ -109,24 +109,16 @@ var texts = g.append("g").attr("id", "texts");
 var nodes = g.append("g").attr("id", "nodes");
 svg.style("cursor","move");
 
-var ni;
-var gg;
 d3.json("graph.json").then(function(graph_json) {
   var graph = new Graph(graph_json.nodes, graph_json.links);
-  gg = graph;
-
   var nodeInfo = new NodeInfo(d3.select('#infoBox'), graph);
-  ni = nodeInfo;
+
   d3.select('#detailsBox').style("width", details_proportion * 100 + "%");
 
   var linkedByIndex = {};
   graph.links.forEach(function(d) {
     linkedByIndex[d.source + "," + d.target] = true;
   });
-
-  function isConnected(a, b) {
-    return linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index == b.index;
-  }
 
   function hasConnections(a) {
     for (var property in linkedByIndex) {

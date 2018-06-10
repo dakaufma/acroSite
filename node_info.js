@@ -1,15 +1,13 @@
 class NodeInfo {
-  constructor(container, nodes, links, link_vis) {
+  constructor(container, graph) {
     this.container = container;
-    this.nodes = nodes;
-    this.links = links;
+    this.graph = graph;
     this.highlight_node = null;
     this.focus_node = null;
-    this.link_vis = link_vis;
   }
 
   nodeToId(nodeName) {
-    return "node_info_" + nodeName.replace(/ /g, '_');
+    return "node_info_" + nodeName.replace(/\W/g, '_');
   }
 
   setNodes(focus_node, highlight_node) {
@@ -19,7 +17,9 @@ class NodeInfo {
 
     if (needsHighlightClear) {
       var node = document.querySelector('#' + this.nodeToId(this.highlight_node.id));
-      node.style.backgroundColor = null;
+      if (node) {
+        node.style.backgroundColor = null;
+      }
     }
 
     this.focus_node = d;
@@ -28,10 +28,12 @@ class NodeInfo {
       this.resetView();
     } else if (needsScroll) {
       var node = document.querySelector('#' + this.nodeToId(this.highlight_node.id));
-      node.style.backgroundColor = '#4ad';
-      node.scrollIntoView({
-        behavior: "smooth"
-      });
+      if (node) {
+        node.style.backgroundColor = '#4ad';
+        node.scrollIntoView({
+          behavior: "smooth"
+        });
+      }
     }
   }
 
@@ -67,7 +69,7 @@ class NodeInfo {
     var other = function(link) {
       return link.source == focus_node ? link.target : link.source;
     };
-    links = this.links.filter(this.link_vis);
+    links = this.graph.links.filter(this.graph.link_vis.bind(this.graph));
     var dest_nodes = Array.from(new Set(links.map(function (d) { return other(d).id; })));
     dest_nodes.sort(function(a, b) { return a.localeCompare(b); });
     if (highlight_node) {

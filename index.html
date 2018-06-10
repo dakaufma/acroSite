@@ -51,14 +51,10 @@ text {
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.min.js"></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script src="node_info.js"></script>
+<script src="graph.js"></script>
 <script>
 
 var keys = true, keyl = true, keyc = true, keyp = true, keyb = true, keyx = true, key1 = true, key2 = true, key3 = true, key4 = true, key5 = true, key0 = true
-var sequencesFilter = [];
-var filterToNode = true;
-var filterFromNode = true;
-var nodeFilterDistance = 1;
-var nodeFilter = [];
 
 var focus_node = null, highlight_node = null;
 
@@ -115,17 +111,14 @@ var texts = g.append("g").attr("id", "texts");
 var nodes = g.append("g").attr("id", "nodes");
 svg.style("cursor","move");
 
-d3.json("graph.json").then(function(graph) {
-  function link_vis(d) {
-    if (focus_node) {
-      return filterFromNode && d.source == focus_node && vis(d.target)
-        || filterToNode && d.target == focus_node && vis(d.source);
-    } else {
-      return vis(d.source) && vis(d.target) && vis_by_link_score(d.score);
-    }
-  }
+var ni;
+var gg;
+d3.json("graph.json").then(function(graph_json) {
+  var graph = new Graph(graph_json.nodes, graph_json.links);
+  gg = graph;
 
-  var nodeInfo = new NodeInfo(d3.select('#infoBox'), graph.nodes, graph.links, link_vis);
+  var nodeInfo = new NodeInfo(d3.select('#infoBox'), graph);
+  ni = nodeInfo;
   d3.select('#detailsBox').style("width", details_proportion * 100 + "%");
 
   var linkedByIndex = {};
@@ -269,10 +262,10 @@ d3.json("graph.json").then(function(graph) {
       set_node(d.id);
     })
     .on("mouseout", function(d) {
-      if (highlight_node) {
-        highlight_node = null;
-        nodeInfo.setNodes(focus_node, highlight_node);
-      }
+      // if (highlight_node) {
+      //   highlight_node = null;
+      //   nodeInfo.setNodes(focus_node, highlight_node);
+      // }
     });
 
   function initToFrom() {
@@ -288,9 +281,9 @@ d3.json("graph.json").then(function(graph) {
       .append("input")
       .attr("type", "checkbox")
       .attr("id", "filterToNode")
-      .property("checked", filterToNode)
+      .property("checked", graph.filterToNode)
       .on("change", function() {
-        filterToNode = d3.select("#filterToNode").property("checked");
+        graph.filterToNode = d3.select("#filterToNode").property("checked");
         set_node(focus_node.id);
       });
     toCheckboxContainer
@@ -301,9 +294,9 @@ d3.json("graph.json").then(function(graph) {
       .append("input")
       .attr("type", "checkbox")
       .attr("id", "filterFromNode")
-      .property("checked", filterFromNode)
+      .property("checked", graph.filterFromNode)
       .on("change", function() {
-        filterFromNode = d3.select("#filterFromNode").property("checked");
+        graph.filterFromNode = d3.select("#filterFromNode").property("checked");
         set_node(focus_node.id);
       });
     fromCheckboxContainer
@@ -315,10 +308,14 @@ d3.json("graph.json").then(function(graph) {
   function set_node(id) {
     d = node.filter(function(d) { return d.id == id }).datum();
     focus_node = d;
-    set_node_filter(id, nodeFilterDistance);
+    highlight_node = null;
+    graph.set_node_filter(id);
+    node.each(function(d) {
+      d.fx = (d.id == id) ? d.x : undefined;
+      d.fy = (d.id == id) ? d.y : undefined;
+    });
     nodeInfo.setNodes(focus_node, highlight_node);
     $('#searchBox').val(id).trigger('change');
-    sequencesFilter = d.sequences;
     zoom.translateTo(svg, d.x, d.y);
     update_visibility();
   }
@@ -408,64 +405,21 @@ d3.json("graph.json").then(function(graph) {
 
   function update_visibility() {
     link.style("display", function(d) {
-      var flag = link_vis(d);
+      var flag = graph.link_vis(d);
       linkedByIndex[d.source.index + "," + d.target.index] = flag;
       return flag ? "inline" : "none";
     });
     node.style("display", function(d) {
-      return (key0||hasConnections(d)) && vis(d) ?"inline" : "none";
+      return (key0||hasConnections(d)) && graph.vis(d) ?"inline" : "none";
     });
     text.style("display", function(d) {
-      return (key0||hasConnections(d)) && vis(d) ? "inline" : "none";
+      return (key0||hasConnections(d)) && graph.vis(d) ? "inline" : "none";
     });
 
     force.stop();
-    force.force("link").links(graph.links.filter(link_vis));
+    force.force("link").links(graph.links.filter(graph.link_vis.bind(graph)));
     force.restart();
     force.alpha(0.5);
-  }
-
-  function set_node_filter(sourceId, numLinks) {
-    all = new Set([sourceId])
-    next = []
-
-    current = [sourceId]
-    if (filterFromNode) {
-      for (var linksFollowed = 0; linksFollowed < numLinks; linksFollowed++) {
-        current.forEach(function(currentId) {
-          graph.links.forEach(function(d) {
-            if (d.source.id == currentId && !all.has(d.target.id)) {
-              next.push(d.target.id);
-              all.add(d.target.id);
-            }
-          });
-        });
-        current = next;
-        next = [];
-      }
-    }
-
-    current = [sourceId]
-    if (filterToNode) {
-      for (var linksFollowed = 0; linksFollowed < numLinks; linksFollowed++) {
-        current.forEach(function(currentId) {
-          graph.links.forEach(function(d) {
-            if (d.target.id == currentId && !all.has(d.source.id)) {
-              next.push(d.source.id);
-              all.add(d.source.id);
-            }
-          });
-        });
-        current = next;
-        next = [];
-      }
-    }
-
-    node.each(function(d) {
-      d.fx = (d.id == sourceId) ? d.x : undefined;
-      d.fy = (d.id == sourceId) ? d.y : undefined;
-    });
-    nodeFilter = Array.from(all);
   }
 
   // Init search box
@@ -507,70 +461,10 @@ d3.json("graph.json").then(function(graph) {
   set_node("Bird")
 });
 
-function vis(node) {
-  return vis_by_position(node.position) &&
-        vis_by_pose_difficulty(node.difficulty) &&
-        vis_by_sequence(node.sequences) &&
-        vis_by_node(node.id);
-}
-
-function vis_by_position(position) {
-  switch (position) {
-    case "Standing": return keys;
-    case "L-Base": return keyl;
-    case "Counter Balance": return keyc;
-    case "Base Supine": return keyp;
-    case "Belly Basing": return keyb;
-    case "No Info Yet": return keyx;
-    default: return true;
-  }
-}
-
-function vis_by_pose_difficulty(difficulty) {
-  switch (difficulty) {
-    case "Easy": return key1;
-    case "Intermediate": return key2;
-    case "Hard": return key3;
-    case "Really Hard": return key4;
-    case "Expert": return key5;
-    case "No Info Yet": return keyx;
-    default: return true;
-  }
-}
-
-function vis_by_sequence(sequences) {
-  if (sequencesFilter.length === 0 || !sequences) {
-    return true;
-  } else {
-    for (var i = 0; i < sequences.length; i++) {
-      if (sequencesFilter.map(function(e) { return e.sequence_name; }).indexOf(sequences[i].sequence_name) != -1) {
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
-function vis_by_node(node) {
-  if (nodeFilter.length === 0) {
-    return true;
-  } else {
-    return nodeFilter.indexOf(node) != -1;
-  }
-}
-
-function vis_by_link_score(score) {
-  if (isNumber(score)) {
-    if (score>=0.666) return keyx;
-    else if (score>=0.333) return keyx;
-    else if (score>=0) return keyx;
-  }
-  return true;
-}
-
 function isNumber(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }	
+
 
 </script>
 </body>

@@ -246,15 +246,19 @@ d3.json("graph.json").then(function(graph) {
 
   node
     .on("mouseover", function(d) {
-      highlight_node = d;
-      fill_pose_info();
+      if (focus_node != d) {
+        highlight_node = d;
+        fill_pose_info();
+      }
     })
     .on("click", function(d) {
       set_node(d.id);
     })
     .on("mouseout", function(d) {
-      highlight_node = null;
-      fill_pose_info();
+      if (highlight_node) {
+        highlight_node = null;
+        fill_pose_info();
+      }
     });
 
   function fill_pose_info() {

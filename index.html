@@ -50,6 +50,7 @@ text {
 <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.min.css"></link>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.min.js"></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="node_info.js"></script>
 <script>
 
 var keys = true, keyl = true, keyc = true, keyp = true, keyb = true, keyx = true, key1 = true, key2 = true, key3 = true, key4 = true, key5 = true, key0 = true
@@ -115,6 +116,16 @@ var nodes = g.append("g").attr("id", "nodes");
 svg.style("cursor","move");
 
 d3.json("graph.json").then(function(graph) {
+  function link_vis(d) {
+    if (focus_node) {
+      return filterFromNode && d.source == focus_node && vis(d.target)
+        || filterToNode && d.target == focus_node && vis(d.source);
+    } else {
+      return vis(d.source) && vis(d.target) && vis_by_link_score(d.score);
+    }
+  }
+
+  var nodeInfo = new NodeInfo(d3.select('#infoBox'), graph.nodes, graph.links, link_vis);
   d3.select('#detailsBox').style("width", details_proportion * 100 + "%");
 
   var linkedByIndex = {};
@@ -251,7 +262,7 @@ d3.json("graph.json").then(function(graph) {
     .on("mouseover", function(d) {
       if (focus_node != d) {
         highlight_node = d;
-        fill_pose_info();
+        nodeInfo.setNodes(focus_node, highlight_node);
       }
     })
     .on("click", function(d) {
@@ -260,7 +271,7 @@ d3.json("graph.json").then(function(graph) {
     .on("mouseout", function(d) {
       if (highlight_node) {
         highlight_node = null;
-        fill_pose_info();
+        nodeInfo.setNodes(focus_node, highlight_node);
       }
     });
 
@@ -301,72 +312,11 @@ d3.json("graph.json").then(function(graph) {
       .attr("for", "filterFromNode");
   }
 
-  function fill_pose_info() {
-    var infoBox = d3.selectAll("#infoBox");
-    var d = focus_node;
-    infoBox.selectAll("*").remove();
-    infoBox
-      .append("div") // Name
-      .append("h1")
-      .text(d.id)
-      .style("")
-    ;
-    infoBox
-      .append("div") // Image
-      .append("img")
-      .attr("src", d.img)
-      .style("width", "100%");
-    infoBox
-      .append("div") // Sequences header
-      .append("h1")
-      .text("Sequences");
-    other = function(link) {
-      return link.source == focus_node ? link.target : link.source;
-    };
-    links = graph.links.filter(link_vis);
-    dest_nodes = Array.from(new Set(links.map(function (d) { return other(d).id; })));
-    dest_nodes.sort(function(a, b) { return a.localeCompare(b); });
-    if (highlight_node) {
-      dest_nodes = [highlight_node.id]
-    }
-    dest_node = infoBox
-      .append("div") // Connected node names
-      .selectAll("div")
-      .data(dest_nodes)
-      .enter()
-      .append("div");
-    dest_node
-      .append("h4")
-      .text(function(d) { return d; });
-    dest_node
-      .append("div") // Sequences transitioning to that node
-      .selectAll("div")
-      .data(function(d) {
-        dup_seq = links
-          .filter(function(d2) { return other(d2).id == d; })
-          .reduce(function (a, b) { return a.concat(b.sequences); }, [])
-          .sort(function (a, b) { return a.sequence_name.localeCompare(b.sequence_name); });
-        seq = []
-        for (var i = 0; i < dup_seq.length; i++) {
-          if (i == 0 || seq[seq.length - 1].sequence_name != dup_seq[i].sequence_name) {
-            seq.push(dup_seq[i]);
-          }
-        }
-        return seq;
-      })
-      .enter()
-      .append("div")
-      .attr("class", "box")
-      .append("a")
-      .text(function(d) { return d.sequence_name; })
-      .attr("href", function (d) { return d.video_url; });
-  }
-
   function set_node(id) {
     d = node.filter(function(d) { return d.id == id }).datum();
     focus_node = d;
     set_node_filter(id, nodeFilterDistance);
-    fill_pose_info();
+    nodeInfo.setNodes(focus_node, highlight_node);
     $('#searchBox').val(id).trigger('change');
     sequencesFilter = d.sequences;
     zoom.translateTo(svg, d.x, d.y);
@@ -453,15 +403,6 @@ d3.json("graph.json").then(function(graph) {
       if (handled) {
         update_visibility();
       }
-    }
-  }
-
-  function link_vis(d) {
-    if (focus_node) {
-      return filterFromNode && d.source == focus_node && vis(d.target)
-        || filterToNode && d.target == focus_node && vis(d.source);
-    } else {
-      return vis(d.source) && vis(d.target) && vis_by_link_score(d.score);
     }
   }
 

@@ -8,13 +8,30 @@ class NodeInfo {
     this.link_vis = link_vis;
   }
 
+  nodeToId(nodeName) {
+    return "node_info_" + nodeName.replace(/ /g, '_');
+  }
+
   setNodes(focus_node, highlight_node) {
-    var needsReset = (this.focus_node != focus_node || this.highlight_node != highlight_node);
+    var needsReset = this.focus_node != focus_node;
+    var needsScroll = highlight_node && this.highlight_node != highlight_node;
+    var needsHighlightClear = this.highlight_node && this.highlight_node != highlight_node;
+
+    if (needsHighlightClear) {
+      var node = document.querySelector('#' + this.nodeToId(this.highlight_node.id));
+      node.style.backgroundColor = null;
+    }
 
     this.focus_node = d;
     this.highlight_node = highlight_node;
     if (needsReset) {
       this.resetView();
+    } else if (needsScroll) {
+      var node = document.querySelector('#' + this.nodeToId(this.highlight_node.id));
+      node.style.backgroundColor = '#4ad';
+      node.scrollIntoView({
+        behavior: "smooth"
+      });
     }
   }
 
@@ -25,21 +42,28 @@ class NodeInfo {
     }
     d = this.focus_node;
 
+    // Name
     this.container
-      .append("div") // Name
+      .append("div")
       .append("h1")
       .text(d.id)
       .style("")
     ;
+
+    // Image
     this.container
-      .append("div") // Image
+      .append("div")
       .append("img")
       .attr("src", d.img)
       .style("width", "100%");
+
+    // Sequences header
     this.container
-      .append("div") // Sequences header
+      .append("div")
       .append("h1")
       .text("Sequences");
+
+    // utility code
     var other = function(link) {
       return link.source == focus_node ? link.target : link.source;
     };
@@ -49,17 +73,23 @@ class NodeInfo {
     if (highlight_node) {
       dest_nodes = [highlight_node.id]
     }
+
+    // Connected node names
+    var localNodeToId = this.nodeToId;
     var dest_node = this.container
-      .append("div") // Connected node names
+      .append("div")
       .selectAll("div")
       .data(dest_nodes)
       .enter()
-      .append("div");
+      .append("div")
+      .attr("id", function(d) { return localNodeToId(d); });
     dest_node
       .append("h4")
       .text(function(d) { return d; });
+
+    // Sequences transitioning to that node
     dest_node
-      .append("div") // Sequences transitioning to that node
+      .append("div")
       .selectAll("div")
       .data(function(d) {
         var dup_seq = links

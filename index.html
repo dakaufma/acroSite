@@ -54,8 +54,6 @@ text {
 <script src="graph.js"></script>
 <script>
 
-var keys = true, keyl = true, keyc = true, keyp = true, keyb = true, keyx = true, key1 = true, key2 = true, key3 = true, key4 = true, key5 = true, key0 = true
-
 var focus_node = null, highlight_node = null;
 
 var text_center = false;
@@ -382,18 +380,18 @@ d3.json("graph.json").then(function(graph_json) {
     } else if (d3.event.keyCode>=48 && d3.event.keyCode<=90 && !d3.event.ctrlKey && !d3.event.altKey && !d3.event.metaKey) {
       var handled = true;
       switch (String.fromCharCode(d3.event.keyCode)) {
-        case "S": keys = !keys; break;
-        case "L": keyl = !keyl; break;
-        case "C": keyc = !keyc; break;
-        case "P": keyp = !keyp; break;
-        case "B": keyb = !keyb; break;
-        case "X": keyx = !keyx; break;
-        case "5": key5 = !key5; break;
-        case "4": key4 = !key4; break;
-        case "1": key1 = !key1; break;
-        case "2": key2 = !key2; break;
-        case "3": key3 = !key3; break;
-        case "0": key0 = !key0; break;
+        case "S": graph.keys = !graph.keys; break;
+        case "L": graph.keyl = !graph.keyl; break;
+        case "C": graph.keyc = !graph.keyc; break;
+        case "P": graph.keyp = !graph.keyp; break;
+        case "B": graph.keyb = !graph.keyb; break;
+        case "X": graph.keyx = !graph.keyx; break;
+        case "5": graph.key5 = !graph.key5; break;
+        case "4": graph.key4 = !graph.key4; break;
+        case "1": graph.key1 = !graph.key1; break;
+        case "2": graph.key2 = !graph.key2; break;
+        case "3": graph.key3 = !graph.key3; break;
+        case "0": graph.key0 = !graph.key0; break;
         default: hanlded = false; break;
       }
 
@@ -410,10 +408,10 @@ d3.json("graph.json").then(function(graph_json) {
       return flag ? "inline" : "none";
     });
     node.style("display", function(d) {
-      return (key0||hasConnections(d)) && graph.vis(d) ?"inline" : "none";
+      return (graph.key0||hasConnections(d)) && graph.vis(d) ?"inline" : "none";
     });
     text.style("display", function(d) {
-      return (key0||hasConnections(d)) && graph.vis(d) ? "inline" : "none";
+      return (graph.key0||hasConnections(d)) && graph.vis(d) ? "inline" : "none";
     });
 
     force.stop();

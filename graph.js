@@ -4,6 +4,18 @@ class Graph {
     this.links = links;
     this.filterFromNode = true;
     this.filterToNode = true;
+    this.keys = true;
+    this.keyl = true;
+    this.keyc = true;
+    this.keyp = true;
+    this.keyb = true;
+    this.keyx = true;
+    this.key1 = true;
+    this.key2 = true;
+    this.key3 = true;
+    this.key4 = true;
+    this.key5 = true;
+    this.key0 = true;
 
     this.nodeFilterDistance = 1;
     this.nodeFilter = [];
@@ -74,24 +86,24 @@ var sequencesFilter = [];
 
   vis_by_position(position) {
     switch (position) {
-      case "Standing": return keys;
-      case "L-Base": return keyl;
-      case "Counter Balance": return keyc;
-      case "Base Supine": return keyp;
-      case "Belly Basing": return keyb;
-      case "No Info Yet": return keyx;
+      case "Standing": return this.keys;
+      case "L-Base": return this.keyl;
+      case "Counter Balance": return this.keyc;
+      case "Base Supine": return this.keyp;
+      case "Belly Basing": return this.keyb;
+      case "No Info Yet": return this.keyx;
       default: return true;
     }
   }
 
   vis_by_pose_difficulty(difficulty) {
     switch (difficulty) {
-      case "Easy": return key1;
-      case "Intermediate": return key2;
-      case "Hard": return key3;
-      case "Really Hard": return key4;
-      case "Expert": return key5;
-      case "No Info Yet": return keyx;
+      case "Easy": return this.key1;
+      case "Intermediate": return this.key2;
+      case "Hard": return this.key3;
+      case "Really Hard": return this.key4;
+      case "Expert": return this.key5;
+      case "No Info Yet": return this.keyx;
       default: return true;
     }
   }

@@ -2,7 +2,7 @@ class NodeInfo {
   constructor(container, graph) {
     this.container = container;
     this.graph = graph;
-    this.highlight_node = null;
+    this.highlight_name = null;
     this.focus_node = null;
   }
 
@@ -10,24 +10,24 @@ class NodeInfo {
     return "node_info_" + nodeName.replace(/\W/g, '_');
   }
 
-  setNodes(focus_node, highlight_node) {
+  setNodes(focus_node, highlight_name) {
     var needsReset = this.focus_node != focus_node;
-    var needsScroll = highlight_node && this.highlight_node != highlight_node;
-    var needsHighlightClear = this.highlight_node && this.highlight_node != highlight_node;
+    var needsScroll = highlight_name && this.highlight_name != highlight_name;
+    var needsHighlightClear = this.highlight_name && this.highlight_name != highlight_name;
 
     if (needsHighlightClear) {
-      var node = document.querySelector('#' + this.nodeToId(this.highlight_node.id));
+      var node = document.querySelector('#' + this.nodeToId(this.highlight_name));
       if (node) {
         node.style.backgroundColor = null;
       }
     }
 
     this.focus_node = d;
-    this.highlight_node = highlight_node;
+    this.highlight_name = highlight_name;
     if (needsReset) {
       this.resetView();
     } else if (needsScroll) {
-      var node = document.querySelector('#' + this.nodeToId(this.highlight_node.id));
+      var node = document.querySelector('#' + this.nodeToId(this.highlight_name));
       if (node) {
         node.style.backgroundColor = '#4ad';
         node.scrollIntoView({
@@ -73,8 +73,8 @@ class NodeInfo {
     links = this.graph.links.filter(this.graph.link_vis.bind(this.graph));
     var dest_nodes = Array.from(new Set(links.map(function (d) { return other(d).id; })));
     dest_nodes.sort(function(a, b) { return a.localeCompare(b); });
-    if (highlight_node) {
-      dest_nodes = [highlight_node.id]
+    if (this.highlight_name) {
+      dest_nodes = [this.highlight_name]
     }
 
     // Connected node names

@@ -19,7 +19,9 @@ class Graph {
 
     this.nodeFilterDistance = 1;
     this.nodeFilter = [];
-var sequencesFilter = [];
+    this.sequencesFilter = [];
+    this.focus_name = null;
+    this.highlight_name = null;
   }
 
   nodeFromName(name) {

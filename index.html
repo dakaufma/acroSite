@@ -54,8 +54,6 @@ text {
 <script src="graph.js"></script>
 <script>
 
-var highlight_node = null;
-
 var text_center = false;
 var outline = false;
 
@@ -244,17 +242,17 @@ d3.json("graph.json").then(function(graph_json) {
   node
     .on("mouseover", function(d) {
       if (graph.focus_name != d.id) {
-        highlight_node = d;
-        nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), highlight_node);
+        graph.highlight_name = d.id;
+        nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), graph.highlight_name);
       }
     })
     .on("click", function(d) {
       set_node(d.id);
     })
     .on("mouseout", function(d) {
-      // if (highlight_node) {
-      //   highlight_node = null;
-      //   nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), highlight_node);
+      // if (graph.highlight_name) {
+      //   graph.highlight_name = null;
+      //   nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), graph.highlight_name);
       // }
     });
 
@@ -297,13 +295,13 @@ d3.json("graph.json").then(function(graph_json) {
 
   function set_node(id) {
     d = node.filter(function(d) { return d.id == id }).datum();
-    highlight_node = null;
+    graph.highlight_name = null;
     graph.set_node_filter(id);
     node.each(function(d) {
       d.fx = (d.id == id) ? d.x : undefined;
       d.fy = (d.id == id) ? d.y : undefined;
     });
-    nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), highlight_node);
+    nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), graph.highlight_name);
     $('#searchBox').val(id).trigger('change');
     zoom.translateTo(svg, d.x, d.y);
     update_visibility();

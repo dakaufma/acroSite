@@ -51,7 +51,7 @@ text {
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.min.js"></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script src="node_info.js"></script>
-<script src="graph.js"></script>
+<script src="state.js"></script>
 <script>
 
 var text_center = false;
@@ -107,14 +107,14 @@ var texts = g.append("g").attr("id", "texts");
 var nodes = g.append("g").attr("id", "nodes");
 svg.style("cursor","move");
 
-d3.json("graph.json").then(function(graph_json) {
-  var graph = new Graph(graph_json.nodes, graph_json.links);
-  var nodeInfo = new NodeInfo(d3.select('#infoBox'), graph);
+d3.json("graph.json").then(function(graph) {
+  var state = new State(graph.nodes, graph.links);
+  var nodeInfo = new NodeInfo(d3.select('#infoBox'), state);
 
   d3.select('#detailsBox').style("width", details_proportion * 100 + "%");
 
   var linkedByIndex = {};
-  graph.links.forEach(function(d) {
+  state.links.forEach(function(d) {
     linkedByIndex[d.source + "," + d.target] = true;
   });
 
@@ -129,14 +129,14 @@ d3.json("graph.json").then(function(graph_json) {
   }
 
   force
-    .nodes(graph.nodes)
-    .force("link", d3.forceLink(graph.links)
+    .nodes(state.nodes)
+    .force("link", d3.forceLink(state.links)
       .distance(4 * nominal_base_node_size))
     .force("collision", d3.forceCollide(nominal_base_node_size * 4)
       .iterations(3));
 
   var link = links.selectAll(".link")
-    .data(graph.links)
+    .data(state.links)
     .enter().append("path")
     .attr("class", "link")
     .style("stroke-width",nominal_stroke)
@@ -147,7 +147,7 @@ d3.json("graph.json").then(function(graph_json) {
     .attr("marker-end", "url(#end)");
 
   var node = nodes.selectAll(".node")
-    .data(graph.nodes)
+    .data(state.nodes)
     .enter().append("g")
     .attr("class", "node")
     .call(d3.drag()
@@ -226,7 +226,7 @@ d3.json("graph.json").then(function(graph_json) {
         .attr("width", 50)});
 
   var text = texts.selectAll(".text")
-    .data(graph.nodes)
+    .data(state.nodes)
     .enter().append("text")
     .attr("dy", "0.5em")
     .style("font-size", nominal_text_size + "px");
@@ -241,18 +241,18 @@ d3.json("graph.json").then(function(graph_json) {
 
   node
     .on("mouseover", function(d) {
-      if (graph.focus_name != d.id) {
-        graph.highlight_name = d.id;
-        nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), graph.highlight_name);
+      if (state.focus_name != d.id) {
+        state.highlight_name = d.id;
+        nodeInfo.setNodes(state.nodeFromName(state.focus_name), state.highlight_name);
       }
     })
     .on("click", function(d) {
       set_node(d.id);
     })
     .on("mouseout", function(d) {
-      // if (graph.highlight_name) {
-      //   graph.highlight_name = null;
-      //   nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), graph.highlight_name);
+      // if (state.highlight_name) {
+      //   state.highlight_name = null;
+      //   nodeInfo.setNodes(state.nodeFromName(state.focus_name), state.highlight_name);
       // }
     });
 
@@ -269,10 +269,10 @@ d3.json("graph.json").then(function(graph_json) {
       .append("input")
       .attr("type", "checkbox")
       .attr("id", "filterToNode")
-      .property("checked", graph.filterToNode)
+      .property("checked", state.filterToNode)
       .on("change", function() {
-        graph.filterToNode = d3.select("#filterToNode").property("checked");
-        set_node(graph.focus_name);
+        state.filterToNode = d3.select("#filterToNode").property("checked");
+        set_node(state.focus_name);
       });
     toCheckboxContainer
       .append("label")
@@ -282,10 +282,10 @@ d3.json("graph.json").then(function(graph_json) {
       .append("input")
       .attr("type", "checkbox")
       .attr("id", "filterFromNode")
-      .property("checked", graph.filterFromNode)
+      .property("checked", state.filterFromNode)
       .on("change", function() {
-        graph.filterFromNode = d3.select("#filterFromNode").property("checked");
-        set_node(graph.focus_name);
+        state.filterFromNode = d3.select("#filterFromNode").property("checked");
+        set_node(state.focus_name);
       });
     fromCheckboxContainer
       .append("label")
@@ -295,13 +295,13 @@ d3.json("graph.json").then(function(graph_json) {
 
   function set_node(id) {
     d = node.filter(function(d) { return d.id == id }).datum();
-    graph.highlight_name = null;
-    graph.set_node_filter(id);
+    state.highlight_name = null;
+    state.set_node_filter(id);
     node.each(function(d) {
       d.fx = (d.id == id) ? d.x : undefined;
       d.fy = (d.id == id) ? d.y : undefined;
     });
-    nodeInfo.setNodes(graph.nodeFromName(graph.focus_name), graph.highlight_name);
+    nodeInfo.setNodes(state.nodeFromName(state.focus_name), state.highlight_name);
     $('#searchBox').val(id).trigger('change');
     zoom.translateTo(svg, d.x, d.y);
     update_visibility();
@@ -369,18 +369,18 @@ d3.json("graph.json").then(function(graph_json) {
     } else if (d3.event.keyCode>=48 && d3.event.keyCode<=90 && !d3.event.ctrlKey && !d3.event.altKey && !d3.event.metaKey) {
       var handled = true;
       switch (String.fromCharCode(d3.event.keyCode)) {
-        case "S": graph.keys = !graph.keys; break;
-        case "L": graph.keyl = !graph.keyl; break;
-        case "C": graph.keyc = !graph.keyc; break;
-        case "P": graph.keyp = !graph.keyp; break;
-        case "B": graph.keyb = !graph.keyb; break;
-        case "X": graph.keyx = !graph.keyx; break;
-        case "5": graph.key5 = !graph.key5; break;
-        case "4": graph.key4 = !graph.key4; break;
-        case "1": graph.key1 = !graph.key1; break;
-        case "2": graph.key2 = !graph.key2; break;
-        case "3": graph.key3 = !graph.key3; break;
-        case "0": graph.key0 = !graph.key0; break;
+        case "S": state.keys = !state.keys; break;
+        case "L": state.keyl = !state.keyl; break;
+        case "C": state.keyc = !state.keyc; break;
+        case "P": state.keyp = !state.keyp; break;
+        case "B": state.keyb = !state.keyb; break;
+        case "X": state.keyx = !state.keyx; break;
+        case "5": state.key5 = !state.key5; break;
+        case "4": state.key4 = !state.key4; break;
+        case "1": state.key1 = !state.key1; break;
+        case "2": state.key2 = !state.key2; break;
+        case "3": state.key3 = !state.key3; break;
+        case "0": state.key0 = !state.key0; break;
         default: hanlded = false; break;
       }
 
@@ -392,19 +392,19 @@ d3.json("graph.json").then(function(graph_json) {
 
   function update_visibility() {
     link.style("display", function(d) {
-      var flag = graph.link_vis(d);
+      var flag = state.link_vis(d);
       linkedByIndex[d.source.index + "," + d.target.index] = flag;
       return flag ? "inline" : "none";
     });
     node.style("display", function(d) {
-      return (graph.key0||hasConnections(d)) && graph.vis(d) ?"inline" : "none";
+      return (state.key0||hasConnections(d)) && state.vis(d) ?"inline" : "none";
     });
     text.style("display", function(d) {
-      return (graph.key0||hasConnections(d)) && graph.vis(d) ? "inline" : "none";
+      return (state.key0||hasConnections(d)) && state.vis(d) ? "inline" : "none";
     });
 
     force.stop();
-    force.force("link").links(graph.links.filter(graph.link_vis.bind(graph)));
+    force.force("link").links(state.links.filter(state.link_vis.bind(state)));
     force.restart();
     force.alpha(0.5);
   }
@@ -431,7 +431,7 @@ d3.json("graph.json").then(function(graph_json) {
       }
       return results;
     };
-    var data = graph.nodes.map(function(x) { return {id: x.id, text: x.id}});
+    var data = state.nodes.map(function(x) { return {id: x.id, text: x.id}});
     $('#searchBox').select2({
       data: data,
       placeholder: 'Search',

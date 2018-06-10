@@ -1,7 +1,7 @@
 class NodeInfo {
-  constructor(container, graph) {
+  constructor(container, state) {
     this.container = container;
-    this.graph = graph;
+    this.state = state;
     this.highlight_name = null;
     this.focus_node = null;
   }
@@ -66,11 +66,11 @@ class NodeInfo {
       .text("Sequences");
 
     // utility code
-    var localFocusName = this.graph.focus_name;
+    var localFocusName = this.state.focus_name;
     var other = function(link) {
       return link.source.id == localFocusName ? link.target : link.source;
     };
-    links = this.graph.links.filter(this.graph.link_vis.bind(this.graph));
+    links = this.state.links.filter(this.state.link_vis.bind(this.state));
     var dest_nodes = Array.from(new Set(links.map(function (d) { return other(d).id; })));
     dest_nodes.sort(function(a, b) { return a.localeCompare(b); });
     if (this.highlight_name) {

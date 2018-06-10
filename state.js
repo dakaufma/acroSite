@@ -1,4 +1,4 @@
-class Graph {
+class State {
   constructor(nodes, links) {
     this.nodes = nodes;
     this.links = links;
@@ -38,12 +38,12 @@ class Graph {
     var all = new Set([sourceId])
     var next = []
 
-    var graph = this;
+    var state = this;
     var current = [sourceId]
     if (this.filterFromNode) {
       for (var linksFollowed = 0; linksFollowed < numLinks; linksFollowed++) {
         current.forEach(function(currentId) {
-          graph.links.forEach(function(d) {
+          state.links.forEach(function(d) {
             if (d.source.id == currentId && !all.has(d.target.id)) {
               next.push(d.target.id);
               all.add(d.target.id);
@@ -59,7 +59,7 @@ class Graph {
     if (this.filterToNode) {
       for (var linksFollowed = 0; linksFollowed < numLinks; linksFollowed++) {
         current.forEach(function(currentId) {
-          graph.links.forEach(function(d) {
+          state.links.forEach(function(d) {
             if (d.target.id == currentId && !all.has(d.source.id)) {
               next.push(d.source.id);
               all.add(d.source.id);

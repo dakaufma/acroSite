@@ -38,6 +38,9 @@ text {
     </div>
     <hr />
     <div class="box">
+      <div id="toFrom"> </div>
+    </div>
+    <div class="box">
       <div id="infoBox"> </div>
     </div>
   </div>
@@ -261,11 +264,10 @@ d3.json("graph.json").then(function(graph) {
       }
     });
 
-  function fill_pose_info() {
-    d = focus_node;
-    var infoBox = d3.selectAll("#infoBox");
-    infoBox.selectAll("*").remove();
-    toFromCheckboxes = infoBox
+  function initToFrom() {
+    var toFrom = d3.selectAll("#toFrom");
+    toFrom.selectAll("*").remove();
+    toFromCheckboxes = toFrom
       .append("div"); // To/From checkboxes
     toCheckboxContainer = toFromCheckboxes
       .append("div");
@@ -297,6 +299,12 @@ d3.json("graph.json").then(function(graph) {
       .append("label")
       .text("Transitions from")
       .attr("for", "filterFromNode");
+  }
+
+  function fill_pose_info() {
+    var infoBox = d3.selectAll("#infoBox");
+    var d = focus_node;
+    infoBox.selectAll("*").remove();
     infoBox
       .append("div") // Name
       .append("h1")
@@ -552,6 +560,8 @@ d3.json("graph.json").then(function(graph) {
       set_node(e.val);
     });
   })
+
+  initToFrom();
 
   set_node("Bird")
 });

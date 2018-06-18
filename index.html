@@ -241,10 +241,8 @@ d3.json("graph.json").then(function(graph) {
 
   node
     .on("mouseover", function(d) {
-      if (state.focus_name != d.id) {
-        state.highlight_name = d.id;
-        nodeInfo.setNodes(state.nodeFromName(state.focus_name), state.highlight_name);
-      }
+      state.highlight_name = d.id;
+      nodeInfo.setNodes(state.nodeFromName(state.focus_name), state.highlight_name);
     })
     .on("click", function(d) {
       set_node(d.id);

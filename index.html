@@ -73,6 +73,8 @@ var default_node_color = "#ccc";
 //var default_node_color = "rgb(3,190,100)";
 var default_link_color = "#888";
 var nominal_base_node_size = 24;
+var link_length = 8 * nominal_base_node_size
+var node_collision_size = 4 * nominal_base_node_size;
 var marker_height_over_width = 1.5;
 var marker_height_over_node_size = 1;
 var nominal_text_size = 12;
@@ -108,7 +110,7 @@ var nodes = g.append("g").attr("id", "nodes");
 svg.style("cursor","move");
 
 d3.json("graph.json").then(function(graph) {
-  var state = new State(graph.nodes, graph.links);
+  var state = new State(graph.nodes, graph.links, graph.sequences);
   var nodeInfo = new NodeInfo(d3.select('#infoBox'), state);
 
   d3.select('#detailsBox').style("width", details_proportion * 100 + "%");
@@ -131,8 +133,8 @@ d3.json("graph.json").then(function(graph) {
   force
     .nodes(state.nodes)
     .force("link", d3.forceLink(state.links)
-      .distance(4 * nominal_base_node_size))
-    .force("collision", d3.forceCollide(nominal_base_node_size * 4)
+      .distance(link_length))
+    .force("collision", d3.forceCollide(node_collision_size)
       .iterations(3));
 
   var link = links.selectAll(".link")
@@ -305,6 +307,25 @@ d3.json("graph.json").then(function(graph) {
     update_visibility();
   }
 
+  function set_sequence(name) {
+    state.set_sequence(name);
+    var numNodes = (new Set(state.nodeFilter)).size;
+    node.each(function(d) {
+      var index = state.nodeFilter.indexOf(d.id);
+      if (index !== -1) {
+        var angle = 2 * Math.PI * index / numNodes;
+        var radius = numNodes * link_length / 2 / Math.PI;
+        d.x = d.fx = radius * Math.cos(angle);
+        d.y = d.fy = radius * Math.sin(angle);
+      } else {
+        d.fx = undefined;
+        d.fy = undefined;
+      }
+    });
+    nodeInfo.setNodes(state.nodeFromName(state.focus_name), state.highlight_name);
+    update_visibility();
+  }
+
 
   zoom.on("zoom", function() {
     link.style("stroke-width",nominal_stroke);
@@ -402,7 +423,8 @@ d3.json("graph.json").then(function(graph) {
     });
 
     force.stop();
-    force.force("link").links(state.links.filter(state.link_vis.bind(state)));
+    var links = state.links.filter(state.link_vis.bind(state));
+    force.force("link").links(links);
     force.restart();
     force.alpha(0.5);
   }
@@ -444,6 +466,7 @@ d3.json("graph.json").then(function(graph) {
   initToFrom();
 
   set_node("Bird")
+  set_sequence("Catherine's Wheel");
 });
 
 function isNumber(n) {

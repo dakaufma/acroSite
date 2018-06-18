@@ -22,7 +22,7 @@ class NodeInfo {
       }
     }
 
-    this.focus_node = d;
+    this.focus_node = focus_node;
     this.highlight_name = highlight_name;
     if (needsReset) {
       this.resetView();

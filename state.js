@@ -1,7 +1,8 @@
 class State {
-  constructor(nodes, links) {
+  constructor(nodes, links, sequences) {
     this.nodes = nodes;
     this.links = links;
+    this.sequences = sequences;
     this.filterFromNode = true;
     this.filterToNode = true;
     this.keys = true;
@@ -19,13 +20,18 @@ class State {
 
     this.nodeFilterDistance = 1;
     this.nodeFilter = [];
+    this.linkFilter = []
     this.sequencesFilter = [];
     this.focus_name = null;
     this.highlight_name = null;
   }
 
   nodeFromName(name) {
-    return this.nodes.filter(function(d) { return d.id == name })[0];
+    var matches = this.nodes.filter(function(d) { return d.id == name });
+    if (matches.length > 0) {
+      return matches[0];
+    }
+    return null;
   }
 
   set_node_filter(sourceId) {
@@ -72,10 +78,39 @@ class State {
     }
 
     this.nodeFilter = Array.from(all);
+    this.linkFilter = [];
+  }
+
+  set_sequence(name) {
+    var matches = this.sequences.filter(function(d) { return d.Name == name });
+    var state = this;
+    if (matches) {
+      var sequence = matches[0];
+      this.nodeFilter = sequence.node_list.map(function(index) {
+        return state.nodes[index].id;
+      });
+
+      var sequence_links = []
+      for (var i = 0; i < sequence.node_list.length - 1; i++) {
+        var sourceId = this.nodes[sequence.node_list[i]].id;
+        var targetId = this.nodes[sequence.node_list[i + 1]].id;
+        this.links.filter(function(d) {
+          return d.source.id == sourceId && d.target.id == targetId
+        }).forEach(function(link) {
+          sequence_links.push(link);
+        });
+      }
+      this.linkFilter = sequence_links;
+
+      this.focus_name = null;
+      this.highlight_name = null;
+    }
   }
 
   link_vis(d) {
-    if (this.focus_name) {
+    if (this.linkFilter.length > 0) {
+      return this.linkFilter.indexOf(d) !== -1;
+    } else if (this.focus_name) {
       return this.filterFromNode && d.source.id == this.focus_name && this.vis(d.target)
         || this.filterToNode && d.target.id == this.focus_name && this.vis(d.source);
     } else {

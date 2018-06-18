@@ -34,7 +34,8 @@ text {
   <div id="detailsBox" style="float: left">
     <div class="box">
       <h1> Search </h1>
-      <div id="searchBox" style="width: 100%"></div>
+      <div id="nodeSearchBox" style="width: 100%"></div>
+      <div id="sequenceSearchBox" style="width: 100%"></div>
     </div>
     <hr />
     <div class="box">
@@ -152,23 +153,6 @@ d3.json("graph.json").then(function(graph) {
     .data(state.nodes)
     .enter().append("g")
     .attr("class", "node");
-    //.call(d3.drag()
-    //  .on("start", function(d) {
-    //    force.alphaTarget(0.8).restart();
-    //    node.each(function(d) {
-    //      d.fx = undefined;
-    //      d.fy = undefined;
-    //    });
-    //    d.fx = d.x;
-    //    d.fy = d.y;
-    //  })
-    //  .on("drag", function(d) {
-    //    d.fx = d3.event.x;
-    //    d.fy = d3.event.y;
-    //  })
-    //  .on("end", function(d) {
-    //    force.alphaTarget(0);
-    //  }));
 
   node.on("dblclick.zoom", function(d) { d3.event.stopPropagation();
     zoom.translateTo(svg, d.x, d.y);
@@ -302,7 +286,8 @@ d3.json("graph.json").then(function(graph) {
       d.fy = (d.id == id) ? d.y : undefined;
     });
     nodeInfo.setNodes(state.nodeFromName(state.focus_name), state.highlight_name);
-    $('#searchBox').val(id).trigger('change');
+    $('#nodeSearchBox').val(id).trigger('change');
+    $('#sequenceSearchBox').val(undefined).trigger('change');
     zoom.translateTo(svg, d.x, d.y);
     update_visibility();
   }
@@ -322,7 +307,10 @@ d3.json("graph.json").then(function(graph) {
         d.fy = undefined;
       }
     });
+    zoom.translateTo(svg, 0, 0);
     nodeInfo.setNodes(state.nodeFromName(state.focus_name), state.highlight_name);
+    $('#nodeSearchBox').val(undefined).trigger('change');
+    $('#sequenceSearchBox').val(name).trigger('change');
     update_visibility();
   }
 
@@ -451,15 +439,23 @@ d3.json("graph.json").then(function(graph) {
       }
       return results;
     };
-    var data = state.nodes.map(function(x) { return {id: x.id, text: x.id}});
-    $('#searchBox').select2({
-      data: data,
+    $('#nodeSearchBox').select2({
+      data: state.nodes.map(function(x) { return {id: x.id, text: x.id}}),
       placeholder: 'Search',
       allowClear: true,
       sortResults: sorter
     });
-    $("#searchBox").on("select2-selecting", function(e) {
+    $("#nodeSearchBox").on("select2-selecting", function(e) {
       set_node(e.val);
+    });
+    $('#sequenceSearchBox').select2({
+      data: state.sequences.map(function(x) { return {id: x.Name, text: x.Name}}),
+      placeholder: 'Search',
+      allowClear: true,
+      sortResults: sorter
+    });
+    $("#sequenceSearchBox").on("select2-selecting", function(e) {
+      set_sequence(e.val);
     });
   })
 

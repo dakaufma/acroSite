@@ -42,7 +42,7 @@ class NodeInfo {
     if (!this.focus_node) {
       return;
     }
-    d = this.focus_node;
+    var d = this.focus_node;
 
     // Name
     this.container

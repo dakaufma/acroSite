@@ -90,6 +90,12 @@ class State {
         return state.nodes[index].id;
       });
 
+      this.sequencesFilter = [{
+        sequence_name: sequence.Name,
+        video_url: sequence["Video Link"],
+        sequence_type: sequence.Type,
+      }];
+
       var sequence_links = []
       for (var i = 0; i < sequence.node_list.length - 1; i++) {
         var sourceId = this.nodes[sequence.node_list[i]].id;

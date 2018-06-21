@@ -155,11 +155,39 @@ class LeftBar {
       .style("") ;
 
     // Video
+    var params = d["Video Link"].replace(/.*\?/, "").split("&");
+    var vid = "";
+    var otherParams = ["modestbranding=1", "showinfo=0", "rel=0", "iv_load_policy=3"];
+    params.forEach(function (keyvalue) {
+      var vidKey = "v=";
+      if (keyvalue.startsWith(vidKey)) {
+        vid = keyvalue.substring(vidKey.length);
+      } else {
+        otherParams.push(keyvalue);
+      }
+    });
+    var embededUrl = "https://www.youtube.com/embed/" + vid
+      + "/?" + otherParams.join("&");
     this.container
+      // hack with padding-bottom to specify hight as a percentage of width
       .append("div")
-      .append("a")
-      .attr("href", d["Video Link"])
-      .text("video");
+      .style("width", "100%")
+      .style("height", "0")
+      .style("padding-bottom", "56.25%")
+      .style("position", "relative")
+      .append("div")
+      .style("position", "absolute")
+      .style("left", "0")
+      .style("right", "0")
+      .style("top", "0")
+      .style("bottom", "0")
+      // actual embedded iframe
+      .append("iframe")
+      .attr("src", embededUrl)
+      .style("width", "100%")
+      .style("height", "100%")
+      .attr("frameborder", "0")
+      .attr("allowfullscreen", true);
 
     // Poses header
     this.container

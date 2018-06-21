@@ -24,6 +24,7 @@ class State {
     this.sequencesFilter = [];
     this.focus_name = null;
     this.highlight_name = null;
+    this.sequence_name = null;
   }
 
   nodeFromName(name) {
@@ -36,6 +37,7 @@ class State {
 
   set_node_filter(sourceId) {
     this.focus_name = sourceId;
+    this.sequence_name = null;
     var numLinks = this.nodeFilterDistance;
 
     var d = this.nodeFromName(sourceId);
@@ -110,6 +112,7 @@ class State {
 
       this.focus_name = null;
       this.highlight_name = null;
+      this.sequence_name = name;
     }
   }
 

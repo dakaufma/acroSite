@@ -160,5 +160,35 @@ class LeftBar {
       .append("a")
       .attr("href", d["Video Link"])
       .text("video");
+
+    // Poses header
+    this.container
+      .append("div")
+      .append("h1")
+      .text("Poses");
+
+    // Set up data for all nodes
+    var state = this.state;
+    var nodes = d.node_list.map(function(index) {
+      return state.nodes[index];
+    });
+
+    var node = this.container
+      .append("div")
+      .selectAll("div")
+      .data(nodes)
+      .enter()
+      .append("div");
+
+    // Node name
+    node
+      .append("h4")
+      .text(function(d) { return d.id; });
+
+    // Node image
+    node
+      .append("img")
+      .attr("src", function(d) { return d.img; })
+      .style("width", "100%");
   }
 }

@@ -22,13 +22,14 @@ class LeftBar {
 
       // Save data
       this.focus_node = focus_node;
+      var old_highlight_name = this.highlight_name;
       this.highlight_name = highlight_name;
       this.sequence_name = null;
 
       if (needsRebuild) {
         this.buildNodeView();
       } else if (needsHighlightClear) {
-        var node = document.querySelector('#' + this.nodeToId(this.highlight_name));
+        var node = document.querySelector('#' + this.nodeToId(old_highlight_name));
         if (node) {
           node.style.backgroundColor = null;
         }

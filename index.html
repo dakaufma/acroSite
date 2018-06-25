@@ -175,13 +175,25 @@ d3.json("graph.json").then(function(graph) {
     .style(towhite, "white");
 
   // Append images
+  var smallSize = 50;
+  var bigSize = 500;
+  var getApplySize = function(imageSize, clip) {
+    return function(element) {
+      var clipD = clip ? imageSize : imageSize * 2; // anything bigger than sqrt(2) works; this makes the animation look nice
+      element
+        .attr("clip-path", "circle(" + clipD/2 + " at " + imageSize/2 + " " + imageSize/2 + ")")
+        .attr("x", -imageSize / 2)
+        .attr("y", -imageSize / 2)
+        .attr("height", imageSize)
+        .attr("width", imageSize);
+    }
+  };
   var images = node.append("svg:image")
+    .attr("id", function(d) { return "img_" + d.id.replace(/\W/g, '_'); })
     .attr("xlink:href",  function(d) { return d.img;})
     .style("visibility", function(d) { return d.img ? "visible" : "hidden"; })
-    .attr("x", function(d) { return -25;})
-    .attr("y", function(d) { return -25;})
-    .attr("height", 50)
-    .attr("width", 50);
+    .attr("preserveAspectRatio", "xMidYMid slice")
+    .call(getApplySize(smallSize, true));
 
   var setEvents = images
     .on( 'mouseenter', function() {
@@ -189,27 +201,12 @@ d3.json("graph.json").then(function(graph) {
       nodes.node().appendChild(this.parentNode);
 
       // animate enlarging the current element
-      d3.select( this )
-        .transition()
-        .attr("x", function(d) { return -100;})
-        .attr("y", function(d) { return -100;})
-        .attr("height", 500)
-        .attr("width", 500)})
+      d3.select(this).transition().call(getApplySize(bigSize, false));})
     // set back
     .on( 'mouseleave', function() {
-      d3.select( this )
-        .transition()
-        .attr("x", function(d) { return -25;})
-        .attr("y", function(d) { return -25;})
-        .attr("height", 50)
-        .attr("width", 50)})
+      d3.select(this).transition().call(getApplySize(smallSize, true));})
     .on( 'mousedown', function() {
-      d3.select( this )
-        .transition()
-        .attr("x", function(d) { return -25;})
-        .attr("y", function(d) { return -25;})
-        .attr("height", 50)
-        .attr("width", 50)});
+      d3.select(this).transition().call(getApplySize(smallSize, true));});
 
   var text = texts.selectAll(".text")
     .data(state.nodes)

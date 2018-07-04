@@ -136,6 +136,55 @@ class LeftBar {
       .attr("href", function (d) { return d.video_url; });
   }
 
+  appendVideo(container, url) {
+    var youtube_regex = /^(https?:\/\/)?(www.)?youtube.com\//i;
+    var youtube_regex_short = /^(https?:\/\/)?(www.)?youtu.be\/([^\?]+)/i;
+
+    if (youtube_regex.test(url) || youtube_regex_short.test(url)) {
+    // Parse embedded youtube videos
+      var params = url.replace(/.*\?/, "").split("&");
+      var short_match = youtube_regex_short.exec(url);
+      var vid = short_match ? short_match[3] : "";
+      var otherParams = ["modestbranding=1", "showinfo=0", "rel=0", "iv_load_policy=3"];
+      params.forEach(function (keyvalue) {
+        var vidKey = "v=";
+        if (keyvalue.startsWith(vidKey)) {
+          vid = keyvalue.substring(vidKey.length);
+        } else {
+          otherParams.push(keyvalue);
+        }
+      });
+      var embededUrl = "https://www.youtube.com/embed/" + vid
+        + "/?" + otherParams.join("&");
+      container
+      // hack with padding-bottom to specify hight as a percentage of width
+        .append("div")
+        .style("width", "100%")
+        .style("height", "0")
+        .style("padding-bottom", "56.25%")
+        .style("position", "relative")
+        .append("div")
+        .style("position", "absolute")
+        .style("left", "0")
+        .style("right", "0")
+        .style("top", "0")
+        .style("bottom", "0")
+      // actual embedded iframe
+        .append("iframe")
+        .attr("src", embededUrl)
+        .style("width", "100%")
+        .style("height", "100%")
+        .attr("frameborder", "0")
+        .attr("allowfullscreen", true);
+    } else {
+      // Don't know how to embed this type of video -- just link
+      container
+        .append("a")
+        .text(url)
+        .attr("href", url);
+    }
+  }
+
   buildSequenceView() {
     this.container.selectAll("*").remove();
 
@@ -156,39 +205,7 @@ class LeftBar {
       .style("") ;
 
     // Video
-    var params = d["Video Link"].replace(/.*\?/, "").split("&");
-    var vid = "";
-    var otherParams = ["modestbranding=1", "showinfo=0", "rel=0", "iv_load_policy=3"];
-    params.forEach(function (keyvalue) {
-      var vidKey = "v=";
-      if (keyvalue.startsWith(vidKey)) {
-        vid = keyvalue.substring(vidKey.length);
-      } else {
-        otherParams.push(keyvalue);
-      }
-    });
-    var embededUrl = "https://www.youtube.com/embed/" + vid
-      + "/?" + otherParams.join("&");
-    this.container
-      // hack with padding-bottom to specify hight as a percentage of width
-      .append("div")
-      .style("width", "100%")
-      .style("height", "0")
-      .style("padding-bottom", "56.25%")
-      .style("position", "relative")
-      .append("div")
-      .style("position", "absolute")
-      .style("left", "0")
-      .style("right", "0")
-      .style("top", "0")
-      .style("bottom", "0")
-      // actual embedded iframe
-      .append("iframe")
-      .attr("src", embededUrl)
-      .style("width", "100%")
-      .style("height", "100%")
-      .attr("frameborder", "0")
-      .attr("allowfullscreen", true);
+    this.appendVideo(this.container, d["Video Link"]);
 
     // Poses header
     this.container

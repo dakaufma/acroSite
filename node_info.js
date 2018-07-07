@@ -3,11 +3,10 @@ class LeftBar {
     this.container = container;
     this.state = state;
     this.highlight_name = null;
-    this.focus_node = null;
+    this.focus_name = null;
 
     this.state.notifier.on("stateChanged", function() {
-      var node = this.state.nodeFromName(this.state.focus_name);
-      this.setData(node, this.state.highlight_name, this.state.sequence_name);
+      this.setData(this.state.focus_name, this.state.highlight_name, this.state.sequence_name);
     }.bind(this));
   }
 
@@ -15,18 +14,18 @@ class LeftBar {
     return "node_info_" + nodeName.replace(/\W/g, '_');
   }
 
-  setData(focus_node, highlight_name, sequence_name) {
-    var wasNodeView = this.focus_node ? true : false;
-    var isNodeView = focus_node ? true : false;
+  setData(focus_name, highlight_name, sequence_name) {
+    var wasNodeView = this.focus_name ? true : false;
+    var isNodeView = focus_name ? true : false;
 
     if (isNodeView) {
       // Determine how much the view needs to be rebuilt vs. modified
-      var needsRebuild = !wasNodeView || this.focus_node != focus_node;
+      var needsRebuild = !wasNodeView || this.focus_name != focus_name;
       var needsScroll = highlight_name && (needsRebuild || this.highlight_name != highlight_name);
       var needsHighlightClear = this.highlight_name && this.highlight_name != highlight_name;
 
       // Save data
-      this.focus_node = focus_node;
+      this.focus_name = focus_name;
       var old_highlight_name = this.highlight_name;
       this.highlight_name = highlight_name;
       this.sequence_name = null;
@@ -56,7 +55,7 @@ class LeftBar {
       var needsHighlightClear = this.highlight_name && this.highlight_name != highlight_name;
 
       // Save data
-      this.focus_node = null;
+      this.focus_name = null;
       var old_highlight_name = this.highlight_name;
       this.highlight_name = highlight_name;
       this.sequence_name = sequence_name;
@@ -84,10 +83,10 @@ class LeftBar {
 
   buildNodeView() {
     this.container.selectAll("*").remove();
-    if (!this.focus_node) {
+    if (!this.focus_name) {
       return;
     }
-    var d = this.focus_node;
+    var d = this.state.nodeFromName(this.focus_name);
 
     // Name
     this.container

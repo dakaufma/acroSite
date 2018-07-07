@@ -28,6 +28,10 @@ class State {
     this.notifier = d3.dispatch("stateChanged");
   }
 
+  copy() {
+    return Object.assign({}, this);
+  }
+
   notify() {
     this.notifier.call("stateChanged");
   }
@@ -119,8 +123,9 @@ class State {
       this.focus_name = null;
       this.highlight_name = null;
       this.sequence_name = name;
+
+      this.notify();
     }
-    this.notify();
   }
 
   link_vis(d) {

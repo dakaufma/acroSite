@@ -2,11 +2,10 @@ class LeftBar {
   constructor(container, state) {
     this.container = container;
     this.state = state;
-    this.highlight_name = null;
-    this.focus_name = null;
+    this.last_state = state.copy();
 
     this.state.notifier.on("stateChanged", function() {
-      this.setData(this.state.focus_name, this.state.highlight_name, this.state.sequence_name);
+      this.update();
     }.bind(this));
   }
 
@@ -14,79 +13,51 @@ class LeftBar {
     return "node_info_" + nodeName.replace(/\W/g, '_');
   }
 
-  setData(focus_name, highlight_name, sequence_name) {
-    var wasNodeView = this.focus_name ? true : false;
-    var isNodeView = focus_name ? true : false;
+  update() {
+    var wasNodeView = this.last_state.focus_name ? true : false;
+    var isNodeView = this.state.focus_name ? true : false;
 
-    if (isNodeView) {
-      // Determine how much the view needs to be rebuilt vs. modified
-      var needsRebuild = !wasNodeView || this.focus_name != focus_name;
-      var needsScroll = highlight_name && (needsRebuild || this.highlight_name != highlight_name);
-      var needsHighlightClear = this.highlight_name && this.highlight_name != highlight_name;
+    // Determine how much the view needs to be rebuilt vs. modified
+    var needsRebuild = isNodeView
+      ? !wasNodeView || this.state.focus_name != this.last_state.focus_name
+      : wasNodeView || this.state.sequence_name != this.last_state.sequence_name;
+    var needsScroll = this.state.highlight_name && (needsRebuild || this.state.highlight_name != this.last_state.highlight_name);
+    var needsHighlightClear = this.last_state.highlight_name && this.state.highlight_name != this.last_state.highlight_name;
 
-      // Save data
-      this.focus_name = focus_name;
-      var old_highlight_name = this.highlight_name;
-      this.highlight_name = highlight_name;
-      this.sequence_name = null;
-
-      if (needsRebuild) {
+    // Update
+    if (needsRebuild) {
+      if (isNodeView) {
         this.buildNodeView();
-      } else if (needsHighlightClear) {
-        var node = document.querySelector('#' + this.nodeToId(old_highlight_name));
-        if (node) {
-          node.style.backgroundColor = null;
-        }
-      }
-
-      if (needsScroll) {
-        var node = document.querySelector('#' + this.nodeToId(this.highlight_name));
-        if (node) {
-          node.style.backgroundColor = '#4ad';
-          node.scrollIntoView({
-            behavior: "smooth"
-          });
-        }
-      }
-    } else { // Sequence view
-      // Determine how much the view needs to be rebuilt vs. modified
-      var needsRebuild = wasNodeView || this.sequence_name != sequence_name;
-      var needsScroll = highlight_name && (needsRebuild || this.highlight_name != highlight_name);
-      var needsHighlightClear = this.highlight_name && this.highlight_name != highlight_name;
-
-      // Save data
-      this.focus_name = null;
-      var old_highlight_name = this.highlight_name;
-      this.highlight_name = highlight_name;
-      this.sequence_name = sequence_name;
-
-      if (needsRebuild) {
+      } else {
         this.buildSequenceView();
-      } else if (needsHighlightClear) {
-        var node = document.querySelector('#' + this.nodeToId(old_highlight_name));
-        if (node) {
-          node.style.backgroundColor = null;
-        }
       }
-
-      if (needsScroll) {
-        var node = document.querySelector('#' + this.nodeToId(this.highlight_name));
-        if (node) {
-          node.style.backgroundColor = '#4ad';
-          node.scrollIntoView({
-            behavior: "smooth"
-          });
-        }
+    } else if (needsHighlightClear) {
+      var node = document.querySelector('#' + this.nodeToId(this.last_state.highlight_name));
+      if (node) {
+        node.style.backgroundColor = null;
       }
     }
+
+    if (needsScroll) {
+      var node = document.querySelector('#' + this.nodeToId(this.state.highlight_name));
+      if (node) {
+        node.style.backgroundColor = '#4ad';
+        node.scrollIntoView({
+          behavior: "smooth"
+        });
+      }
+    }
+
+    // Save the current state
+    this.last_state = this.state.copy();
   }
 
   buildNodeView() {
     this.container.selectAll("*").remove();
-    if (!this.focus_name) {
+    if (!this.state.focus_name) {
       return;
     }
-    var d = this.state.nodeFromName(this.focus_name);
+    var d = this.state.nodeFromName(this.state.focus_name);
 
     // Name
     this.container
@@ -116,8 +87,8 @@ class LeftBar {
     links = this.state.links.filter(this.state.link_vis.bind(this.state));
     var dest_nodes = Array.from(new Set(links.map(function (d) { return other(d).id; })));
     dest_nodes.sort(function(a, b) { return a.localeCompare(b); });
-    if (this.highlight_name) {
-      dest_nodes = [this.highlight_name]
+    if (this.state.highlight_name) {
+      dest_nodes = [this.state.highlight_name]
     }
 
     // Connected node names
@@ -210,7 +181,7 @@ class LeftBar {
   buildSequenceView() {
     this.container.selectAll("*").remove();
 
-    var sequence_name = this.sequence_name;
+    var sequence_name = this.state.sequence_name;
     var matches = this.state.sequences.filter(function (d) {
       return d.Name == sequence_name;
     });

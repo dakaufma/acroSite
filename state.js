@@ -25,6 +25,11 @@ class State {
     this.focus_name = null;
     this.highlight_name = null;
     this.sequence_name = null;
+    this.notifier = d3.dispatch("stateChanged");
+  }
+
+  notify() {
+    this.notifier.call("stateChanged");
   }
 
   nodeFromName(name) {
@@ -81,6 +86,7 @@ class State {
 
     this.nodeFilter = Array.from(all);
     this.linkFilter = [];
+    this.notify();
   }
 
   set_sequence(name) {
@@ -114,6 +120,7 @@ class State {
       this.highlight_name = null;
       this.sequence_name = name;
     }
+    this.notify();
   }
 
   link_vis(d) {

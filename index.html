@@ -225,7 +225,7 @@ d3.json("graph.json").then(function(graph) {
   node
     .on("mouseover", function(d) {
       state.highlight_name = d.id;
-      leftBar.setData(state.nodeFromName(state.focus_name), state.highlight_name, state.sequence_name);
+      state.notify();
     })
     .on("click", function(d) {
       set_node(d.id);
@@ -233,7 +233,7 @@ d3.json("graph.json").then(function(graph) {
     .on("mouseout", function(d) {
       // if (state.highlight_name) {
       //   state.highlight_name = null;
-      //   leftBar.setData(state.nodeFromName(state.focus_name), state.highlight_name, state.sequence_name);
+      //   state.notify();
       // }
     });
 
@@ -282,7 +282,6 @@ d3.json("graph.json").then(function(graph) {
       d.fx = (d.id == id) ? d.x : undefined;
       d.fy = (d.id == id) ? d.y : undefined;
     });
-    leftBar.setData(state.nodeFromName(state.focus_name), state.highlight_name, state.sequence_name);
     $('#nodeSearchBox').val(id).trigger('change');
     $('#sequenceSearchBox').val(undefined).trigger('change');
     zoom.translateTo(svg, d.x, d.y);
@@ -307,7 +306,6 @@ d3.json("graph.json").then(function(graph) {
       }
     });
     zoom.translateTo(svg, 0, 0);
-    leftBar.setData(state.nodeFromName(state.focus_name), state.highlight_name, state.sequence_name);
     $('#nodeSearchBox').val(undefined).trigger('change');
     $('#sequenceSearchBox').val(name).trigger('change');
     update_visibility();

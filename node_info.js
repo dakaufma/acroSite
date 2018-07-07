@@ -4,6 +4,11 @@ class LeftBar {
     this.state = state;
     this.highlight_name = null;
     this.focus_node = null;
+
+    this.state.notifier.on("stateChanged", function() {
+      var node = this.state.nodeFromName(this.state.focus_name);
+      this.setData(node, this.state.highlight_name, this.state.sequence_name);
+    }.bind(this));
   }
 
   nodeToId(nodeName) {

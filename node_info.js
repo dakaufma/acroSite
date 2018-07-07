@@ -52,14 +52,32 @@ class LeftBar {
     } else { // Sequence view
       // Determine how much the view needs to be rebuilt vs. modified
       var needsRebuild = wasNodeView || this.sequence_name != sequence_name;
+      var needsScroll = highlight_name && (needsRebuild || this.highlight_name != highlight_name);
+      var needsHighlightClear = this.highlight_name && this.highlight_name != highlight_name;
 
       // Save data
       this.focus_node = null;
-      this.highlight_name = null;
+      var old_highlight_name = this.highlight_name;
+      this.highlight_name = highlight_name;
       this.sequence_name = sequence_name;
 
       if (needsRebuild) {
         this.buildSequenceView();
+      } else if (needsHighlightClear) {
+        var node = document.querySelector('#' + this.nodeToId(old_highlight_name));
+        if (node) {
+          node.style.backgroundColor = null;
+        }
+      }
+
+      if (needsScroll) {
+        var node = document.querySelector('#' + this.nodeToId(this.highlight_name));
+        if (node) {
+          node.style.backgroundColor = '#4ad';
+          node.scrollIntoView({
+            behavior: "smooth"
+          });
+        }
       }
     }
   }
@@ -224,12 +242,14 @@ class LeftBar {
       return state.nodes[index];
     });
 
+    var localNodeToId = function(d) { return this.nodeToId(d.id); }.bind(this);
     var node = this.container
       .append("div")
       .selectAll("div")
       .data(nodes)
       .enter()
-      .append("div");
+      .append("div")
+      .attr("id", function(d) { return localNodeToId(d); });
 
     // Node name
     node

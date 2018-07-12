@@ -19,8 +19,12 @@ class LeftBar {
 
     // Determine how much the view needs to be rebuilt vs. modified
     var needsRebuild = isNodeView
-      ? !wasNodeView || this.state.focus_name != this.last_state.focus_name
-      : wasNodeView || this.state.sequence_name != this.last_state.sequence_name;
+      ? !wasNodeView
+      || this.state.focus_name != this.last_state.focus_name
+      || this.state.filterFromNode != this.last_state.filterFromNode
+      || this.state.filterToNode != this.last_state.filterToNode
+      : wasNodeView
+      || this.state.sequence_name != this.last_state.sequence_name;
     var needsScroll = this.state.highlight_name && (needsRebuild || this.state.highlight_name != this.last_state.highlight_name);
     var needsHighlightClear = this.last_state.highlight_name && this.state.highlight_name != this.last_state.highlight_name;
 

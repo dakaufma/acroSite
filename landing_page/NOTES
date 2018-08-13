@@ -27,3 +27,4 @@ kubectl run jointhecircus-landing --image=gcr.io/join-the-circus/landing:v1 --po
 kubectl get pods
 kubectl expose deployment jointhecircus-landing --type=LoadBalancer --port 80 --target-port 8000
 kubectl get service  # shows the external IP -- add it to DNS
+kubectl set image deployment/jointhecircus-landing jointhecircus-landing=gcr.io/join-the-circus/landing:v2

@@ -1,0 +1,29 @@
+# GCP setup: https://cloud.google.com/kubernetes-engine/docs/tutorials/hello-app
+
+## Computer + account setup
+sudo aura -Ay google-cloud-sdk
+sudo gcloud components install kubectl
+# Add /opt/google-cloud-sdk/bin to PATH
+gcloud auth login
+gcloud projects create join-the-circus
+gcloud config set project join-the-circus
+gcloud config set compute/zone us-central1-a
+gcloud auth configure-docker
+
+## Cluster setup
+gcloud container clusters create jointhecircus-landing-cluster --num-nodes=1
+gcloud compute instances list
+gcloud container clusters get-credentials jointhecircus-landing-cluster
+
+# Useful docker commands
+docker build -t gcr.io/join-the-circus/landing .
+docker build -t gcr.io/join-the-circus/landing:v1 .
+docker run -p 8000:8000 gcr.io/join-the-circus/landing
+# untested: docker run --rm -p 8000:8000 gcr.io/join-the-circus/landing
+docker push gcr.io/join-the-circus/landing:v1
+
+# Deploy
+kubectl run jointhecircus-landing --image=gcr.io/join-the-circus/landing:v1 --port 8000
+kubectl get pods
+kubectl expose deployment jointhecircus-landing --type=LoadBalancer --port 80 --target-port 8000
+kubectl get service  # shows the external IP -- add it to DNS

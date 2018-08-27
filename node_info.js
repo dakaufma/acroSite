@@ -117,23 +117,24 @@ class LeftBar {
         var dup_seq = links
           .filter(function(d2) { return other(d2).id == d; })
           .reduce(function (a, b) { return a.concat(b.sequences); }, [])
-          .sort(function (a, b) { return a.sequence_name.localeCompare(b.sequence_name); });
+          .map(function (a) { return this.state.sequences[a]; }.bind(this))
+          .sort(function (a, b) { return a.Name.localeCompare(b.Name); }.bind(this));
         var seq = []
         for (var i = 0; i < dup_seq.length; i++) {
-          if (i == 0 || seq[seq.length - 1].sequence_name != dup_seq[i].sequence_name) {
+          if (i == 0 || seq[seq.length - 1].Name != dup_seq[i].Name) {
             seq.push(dup_seq[i]);
           }
         }
         return seq;
-      })
+      }.bind(this))
       .enter()
       .append("div")
       .attr("class", "box")
       .append("a")
-      .text(function(d) { return d.sequence_name; })
+      .text(function(d) { return d.Name; })
       .attr("href", "#")
       .on("click", function (d) {
-        this.set_sequence(d.sequence_name);
+        this.set_sequence(d.Name);
       }.bind(this));
   }
 

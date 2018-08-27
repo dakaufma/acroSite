@@ -50,7 +50,8 @@ class State {
     var numLinks = this.nodeFilterDistance;
 
     var d = this.nodeFromName(sourceId);
-    this.sequencesFilter = d.sequences;
+    var sequences = this.sequences;
+    this.sequencesFilter = d.sequences.map(function (a) { return sequences[a]; });
 
     var all = new Set([sourceId])
     var next = []
@@ -102,11 +103,7 @@ class State {
         return state.nodes[index].id;
       });
 
-      this.sequencesFilter = [{
-        sequence_name: sequence.Name,
-        video_url: sequence["Video Link"],
-        sequence_type: sequence.Type,
-      }];
+      this.sequencesFilter = [sequence];
 
       var sequence_links = []
       for (var i = 0; i < sequence.node_list.length - 1; i++) {
@@ -140,9 +137,10 @@ class State {
   }
 
   vis(node) {
+    var sequences = this.sequences;
     return this.vis_by_position(node.position) &&
       this.vis_by_pose_difficulty(node.difficulty) &&
-      this.vis_by_sequence(node.sequences) &&
+      this.vis_by_sequence(node.sequences.map(function (a) { return sequences[a]; })) &&
       this.vis_by_node(node.id);
   }
 
@@ -175,7 +173,7 @@ class State {
       return true;
     } else {
       for (var i = 0; i < sequences.length; i++) {
-        if (this.sequencesFilter.map(function(e) { return e.sequence_name; }).indexOf(sequences[i].sequence_name) != -1) {
+        if (this.sequencesFilter.map(function(e) { return e.Name; }).indexOf(sequences[i].Name) != -1) {
           return true;
         }
       }

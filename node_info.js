@@ -1,8 +1,9 @@
 class LeftBar {
-  constructor(container, state) {
+  constructor(container, state, set_sequence) {
     this.container = container;
     this.state = state;
     this.last_state = state.copy();
+    this.set_sequence = set_sequence;
 
     this.state.notifier.on("stateChanged", function() {
       this.update();
@@ -130,7 +131,10 @@ class LeftBar {
       .attr("class", "box")
       .append("a")
       .text(function(d) { return d.sequence_name; })
-      .attr("href", function (d) { return d.video_url; });
+      .attr("href", "#")
+      .on("click", function (d) {
+        this.set_sequence(d.sequence_name);
+      }.bind(this));
   }
 
   appendVideo(container, url) {

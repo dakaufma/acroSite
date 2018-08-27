@@ -112,7 +112,31 @@ svg.style("cursor","move");
 
 d3.json("graph.json").then(function(graph) {
   var state = new State(graph.nodes, graph.links, graph.sequences);
-  var leftBar = new LeftBar(d3.select('#infoBox'), state);
+
+  function set_sequence(name) {
+    state.set_sequence(name);
+    var orderedNodes = state.nodeFilter.filter(function(node, i, nodes) {
+      return nodes.indexOf(node) === i;
+    });
+    node.each(function(d) {
+      var index = orderedNodes.indexOf(d.id);
+      if (index !== -1) {
+        var angle = 2 * Math.PI * index / orderedNodes.length;
+        var radius = orderedNodes.length * link_length / 2 / Math.PI;
+        d.x = d.fx = radius * Math.cos(angle);
+        d.y = d.fy = radius * Math.sin(angle);
+      } else {
+        d.fx = undefined;
+        d.fy = undefined;
+      }
+    });
+    zoom.translateTo(svg, 0, 0);
+    $('#nodeSearchBox').val(undefined).trigger('change');
+    $('#sequenceSearchBox').val(name).trigger('change');
+    update_visibility();
+  }
+
+  var leftBar = new LeftBar(d3.select('#infoBox'), state, set_sequence);
 
   d3.select('#detailsBox').style("width", details_proportion * 100 + "%");
 
@@ -287,30 +311,6 @@ d3.json("graph.json").then(function(graph) {
     zoom.translateTo(svg, d.x, d.y);
     update_visibility();
   }
-
-  function set_sequence(name) {
-    state.set_sequence(name);
-    var orderedNodes = state.nodeFilter.filter(function(node, i, nodes) {
-      return nodes.indexOf(node) === i;
-    });
-    node.each(function(d) {
-      var index = orderedNodes.indexOf(d.id);
-      if (index !== -1) {
-        var angle = 2 * Math.PI * index / orderedNodes.length;
-        var radius = orderedNodes.length * link_length / 2 / Math.PI;
-        d.x = d.fx = radius * Math.cos(angle);
-        d.y = d.fy = radius * Math.sin(angle);
-      } else {
-        d.fx = undefined;
-        d.fy = undefined;
-      }
-    });
-    zoom.translateTo(svg, 0, 0);
-    $('#nodeSearchBox').val(undefined).trigger('change');
-    $('#sequenceSearchBox').val(name).trigger('change');
-    update_visibility();
-  }
-
 
   zoom.on("zoom", function() {
     link.style("stroke-width",nominal_stroke);

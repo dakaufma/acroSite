@@ -1,20 +1,49 @@
-Force directed Graph with:
+# Site Structure:
 
-1. Dragable nodes
-2. Zoom and pan (with maximum effective-size limit for zoomed elements)
-3. Double-click to center node
-4. Resizable window (with zoom/pan-aware relocation of center of gravity)
-5. Text labels (which are not occluded by nodes; flag to set centered/offset)
-6. Properties determine node size and shape, and node and link colors (with default values; flag to set fill/outline). 
-7. Filter nodes by shape (c,d,r,s,t,x), by score (l,h,m), if orphan (0), and filter links by score (1,2,3)
-8. Hover to highlight 1st-order neighborhood. Click to fade surroundings
-9. Read graph from json file
+Pod: nginx
+- volume mount ssl certs (readonly)
+- proxy forward port 80 well-known/acme-challenge (or whatever it is) to the lets-encrypt pod
+- redirect the rest of port 80 to SSL
+- proxy forward port 443 to various content pods based on subdomain
+
+Pod: lets-encrypt
+- volume mount ssl certs (read-write)
+- does the let's encrypt thing
+- advertised by a service so nginx can find it via Kubernetes service DNS resolution
+
+Pod: gitlabs
+- content pod
+- Kubernetes service
+
+Pod: static-landing
+- content pod
+- runs nginx to serve static content
+- Kubernetes service
+
+Pod: staging
+- content pod
+- somehow protected (htpassword?)
+- Kubernetes services
 
 
-forked from <a href='http://bl.ocks.org/eyaler/'>eyaler</a>'s block: <a href='http://bl.ocks.org/eyaler/10586116'>Force-Directed Graph with Drag/Zoom/Pan/Center/Resize/Labels/Shapes/Filter/Highlight</a>
 
-forked from <a href='http://bl.ocks.org/FrissAnalytics/'>FrissAnalytics</a>'s block: <a href='http://bl.ocks.org/FrissAnalytics/a63553129a896159c07b71dd3ede35d7'>Force-Directed Graph with Drag/Zoom/Pan/Center/Resize/Labels/Shapes/Filter/Highlight</a>
 
-forked from <a href='http://bl.ocks.org/anonymous/'>anonymous</a>'s block: <a 
-href='http://bl.ocks.org/anonymous/99cf120e6a0799fc8d76013bd509cb7e'>Force-Directed 
-Graph with Drag/Zoom/Pan/Center/Resize/Labels/Shapes/Filter/Highlight</a>
+Resources:
+- Kubernetes services [1]
+  - service yaml files
+  - connecting services with pods
+  - service DNS resolution
+    - link to DNS server add-on?
+- Kubernetes guestbook example [2]
+  - example service config files, referencing services from pods
+- Background on let's encrypt w/ docker not quite how I want to do it [3]
+- nginx docker companion container [4]
+  - I think this is basically what I want, although I sense some black magic
+  - Example implementation [5]
+
+
+[1]: https://kubernetes.io/docs/concepts/services-networking/service/
+[2]: https://cloud.google.com/kubernetes-engine/docs/tutorials/guestbook
+[3]: https://miki725.github.io/docker/crypto/2017/01/29/docker+nginx+letsencrypt.html
+[4]: https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion/
+[5]: https://cloud.google.com/community/tutorials/nginx-reverse-proxy-docker
